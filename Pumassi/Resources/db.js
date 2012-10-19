@@ -25,6 +25,10 @@ exports.createDb = function() {
  type = "ADD_PUMASI";
  }
  */
+ exports.test = function(){
+ 
+ 
+ }
 exports.addPumasi = function(e) {
 	var db = Ti.Database.open(DATABASE_NAME);
 	db.execute('INSERT INTO tb_pumasi(personId, personName, eventName, eventTypeId, money, dateStr, dateValue, alramStr, alramValue, memo, memoImage) ' + 'VALUES (?,?,?,?,?,?,?,?,?,?,?)', e.personId, e.personName, e.eventName, e.eventTypeId, e.money, e.dateStr, e.dateValue, e.alramStr, e.alramValue, e.memo, e.memoImage);
