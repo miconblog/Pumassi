@@ -1,4 +1,3 @@
-// this sets the background color of the master UIView (when there are no windows/tab groups on it)
 Titanium.UI.setBackgroundColor('#000');
 var db = require("db");
 db.createDb();
@@ -9,7 +8,7 @@ var win1 = Titanium.UI.createWindow({
     title:'품앗이',
     backgroundColor:'#fff',
     font:{fontSize:20,fontFamily:'NanumGothic', fontWeight:'bold'},
-    url : '/main/tab1.js'
+    url : '/main/PumassiTab.js'
 });
 var tab1 = Titanium.UI.createTab({  
     icon:'KS_nav_views.png',
@@ -20,7 +19,7 @@ var tab1 = Titanium.UI.createTab({
 var win2 = Titanium.UI.createWindow({  
     title:'나의 이벤트',
     backgroundColor:'#fff',
-    url : '/main/tab2.js'
+    url : '/main/EventTab.js'
 });
 var tab2 = Titanium.UI.createTab({  
     icon:'KS_nav_ui.png',
@@ -31,7 +30,7 @@ var tab2 = Titanium.UI.createTab({
 var win3 = Titanium.UI.createWindow({  
     title:'도움말',
     backgroundColor:'#fff',
-    url : '/main/tab3.js'
+    url : '/main/SettingTab.js'
 });
 var tab3 = Titanium.UI.createTab({  
     icon:'KS_nav_ui.png',
@@ -44,6 +43,7 @@ tabGroup.addTab(tab2);
 tabGroup.addTab(tab3);
 tabGroup.open();
 
+/// ########### 이벤트
 
 Ti.App.addEventListener("GET_EVENT_TYPE", function(e){
 	var _data = db.getAllEventType();
@@ -107,11 +107,13 @@ Ti.App.addEventListener("ADD_PUMASI", function(e){
 	
 	db.addPumasi(e);
 	
-	Ti.App.fireEvent("RELOAD_PUMASI");
+	Ti.App.fireEvent("LOAD_PUMASI");
 });
 
-
-Ti.App.addEventListener("RELOAD_PUMASI", function(e){
+/**
+ * 품앗이 정보를 로드한다.
+ */
+Ti.App.addEventListener("LOAD_PUMASI", function(e){
 	
 	var data = db.getPumasi();
 	var now = new Date().getTime();

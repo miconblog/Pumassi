@@ -1,4 +1,4 @@
-var DatePicker = function(lbDate, alramSwitch) {
+var DatePicker = function(rowDate, alramSwitch, lunnarSwitch) {
 	var self = this;
 
 	// 날짜 선택
@@ -22,12 +22,17 @@ var DatePicker = function(lbDate, alramSwitch) {
 		keyboardToolbarColor : '#999',
 		keyboardToolbarHeight : 40,
 	});
-
-	picker.selectionIndicator = true;
-	picker.addEventListener("change", function(e) {
-		var sDate = e.value.toLocaleString();
-		lbDate.text = sDate.replace(/(오전|오후)\s.*/, "");
+	picker.addEventListener("change", function(e){
+		var dt = picker.getValue();
+		var Y  = dt.getFullYear();
+		var M  = dt.getMonth() + 1;
+		var D  = dt.getDate();
+		
+		rowDate.title = Y +"년 " + M + "월 " + D + "일";
+		rowDate.dtStr = Y +"년 " + M + "월 " + D + "일";
+		rowDate.value = (new Date(Y+"/"+M+"/"+D)).getTime();
 	});
+	picker.selectionIndicator = true;
 
 	var view = Ti.UI.createView({
 		width : 320,
@@ -44,13 +49,20 @@ var DatePicker = function(lbDate, alramSwitch) {
 		style : Ti.UI.iPhone.SystemButtonStyle.PLAIN
 	});
 	btn.addEventListener("click", function(e) {
-		var sDate = picker.getValue().toLocaleString();
-		lbDate.text = sDate.replace(/(오전|오후)\s.*/, "");
-		lbDate.value = picker.getValue().getTime();
+		var dt = picker.getValue();
+		var Y  = dt.getFullYear();
+		var M  = dt.getMonth() + 1;
+		var D  = dt.getDate();
+		
+		rowDate.title = Y +"년 " + M + "월 " + D + "일";
+		rowDate.dtStr = Y +"년 " + M + "월 " + D + "일";
+		rowDate.value = (new Date(Y+"/"+M+"/"+D)).getTime();
 		if (!!alramSwitch) {
 			alramSwitch.enabled = true;
 		}
-
+		if (!!lunnarSwitch) {
+			lunnarSwitch.enabled = true;
+		}
 		self.hide();
 	});
 

@@ -1,4 +1,4 @@
-var EventTypePicker = function(lbType) {
+var EventTypePicker = function(typeRow, lbTime, timeSwitch) {
 	var self = this;
 
 	var view = Ti.UI.createView({
@@ -12,12 +12,17 @@ var EventTypePicker = function(lbType) {
 		bottom : 0
 	});
 
-	// turn on the selection indicator (off by default)
 	picker.selectionIndicator = true;
 	picker.addEventListener("change", function(e) {
-		console.log("change", e.row);
-		lbType.text = e.selectedValue[0];
-		lbType.typeId = e.row.typeId;
+		typeRow.title = e.selectedValue[0];
+		typeRow.eventType = e.row.eventType;
+		timeSwitch.value = false;
+		
+		if(e.row.eventType == 3){
+			lbTime.text = "반복 없음";
+		}else{
+			lbTime.text = "시간 설정";
+		}
 	});
 	view.add(picker);
 

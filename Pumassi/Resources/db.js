@@ -2,45 +2,60 @@ var DATABASE_NAME = 'PUMASI';
 var SYS_DB = 'CALENDAR';
 
 exports.createDb = function() {
-	Ti.Database.install('data.db', DATABASE_NAME);
+	Ti.Database.install('pumassi.db', DATABASE_NAME);
 	Ti.Database.install('cal.db', SYS_DB);
-	
-	//var userdb = Ti.Database.open(USER_DATABASE_NAME);
-	//userdb.execute('DROP TABLE user_tb_gardens');
-	//userdb.execute('CREATE TABLE IF NOT EXISTS user_tb_gardens ( gardenId INTEGER PRIMARY KEY AUTOINCREMENT, cropId INTEGER, name TEXT, ordering INTEGER DEFAULT 0, startDate TEXT, endDate TEXT)');
-	//nuserdb.close();
 };
 
 /**
- * 품앗이 데이터 추가
- *  {
- alramStr = "\Uc54c\Ub9bc \Uc124\Uc815";
- dateStr = "\Ub0a0\Uc9dc \Ubbf8\Uc785\Ub825";
- isAlram = 0;
- memo = "";
- memoImage = "/images/camera.png";
- money = 50000;
- name = "\Ubd88\Uaf43 \Ub0a8\Uc790";
- pId = 1;
- type = "ADD_PUMASI";
- }
+ * 품앗이 등록
+ * @param {Object} e
  */
 exports.addPumasi = function(e) {
+	console.log("************ 품앗이 데이터를 DB에 입력한다. ************", e);
 	var db = Ti.Database.open(DATABASE_NAME);
-	db.execute('INSERT INTO tb_pumasi(personId, personName, eventName, eventTypeId, money, dateStr, dateValue, alramStr, alramValue, memo, memoImage) ' + 'VALUES (?,?,?,?,?,?,?,?,?,?,?)', e.personId, e.personName, e.eventName, e.eventTypeId, e.money, e.dateStr, e.dateValue, e.alramStr, e.alramValue, e.memo, e.memoImage);
-	db.close();
+	
+	var gBookId = (new Date()).getTime();
+	var eventDate = null, isLunar=0, isRepeat=0, lastModified = gBookId;
+	if(!!e.eventDate){
+		eventDate = e.eventDate;
+		isLunarDate = e.isLunarDate;
+	}
+		
+	db.execute('INSERT INTO tb_pumassi_events(hostId, guestbookId, eventType, eventDate,'
+		+ 'isLunarDate, isRepeat, lastModified, isCompleted, memo, hostName) ' 
+		+ 'VALUES (?,?,?,?,?,?,?,?,?,?)', e.personId, gBookId, e.eventTypeId, e.eventDate||null,
+		 e.money, e.dateStr, e.dateValue, e.alramStr, e.alramValue, e.memo, e.memoImage);
+
+	
+
+	// 방명록을 먼저 생성한다.
+	db.execute('INSERT INTO tb_guest_books(gbookId, eventId, guestName, money, isAttend, memo) ' 
+		+ 'VALUES (?,?,?,?,?,?)',  gBookId);
+	
+	
+	
+	
+		db.close();
 };
 
+/**
+ * 내가 품앗이한 데이터를 가져온다.
+ * 1. 모든 방명록을 뒤져서 내 이름이 있는 방명록을 확인하고,
+ * 2. 해당 방명록의 이벤트를 가져온다.
+ * 3. 그리고 반환하는 데이터 모델을 반들어 반환한다.
+ * 4. 데이터 모델은 무조건 배열, 없으면 빈배열  
+ */
 exports.getPumasi = function() {
+	console.log("************ 내가 품앗이한 데이터를 가져온다. **************");
 	var db = Ti.Database.open(DATABASE_NAME);
-	var rows = db.execute('SELECT * FROM tb_pumasi');
+	var rows = db.execute('SELECT * FROM tb_guest_books WHERE guestId=0');
 	var data = [];
 	while (rows.isValidRow()) {
 		data.push({
 			personId : rows.fieldByName('personId'),
 			personName : rows.fieldByName('personName'),
 			eventName : rows.fieldByName('eventName'),
-			eventTypeId : rows.fieldByName('eventTypeId'),
+			eventType : rows.fieldByName('eventType'),
 			money : rows.fieldByName('money'),
 			dateStr : rows.fieldByName('dateStr'),
 			dateValue : rows.fieldByName('dateValue'),
@@ -55,13 +70,17 @@ exports.getPumasi = function() {
 	return data;
 };
 
+
+/**
+ * 모든 이벤트 타입을 반환한다.
+ */
 exports.getAllEventType = function() {
 	var db = Ti.Database.open(DATABASE_NAME);
 	var rows = db.execute('SELECT * FROM tb_event_type');
 	var data = [];
 	while (rows.isValidRow()) {
 		data.push({
-			typeId : rows.fieldByName('eventTypeId'),
+			eventType : rows.fieldByName('eventType'),
 			title : rows.fieldByName('eventName'),
 		});
 		rows.next();
@@ -79,20 +98,27 @@ exports.addEventType = function(_eventName) {
 
 exports.addEvent = function(e) {
 	var db = Ti.Database.open(DATABASE_NAME);
-	db.execute('INSERT INTO tb_event(eventTypeId, eventName, eventDateStr, eventDateValue, isLunar, isRepeat, memo, memoImage) ' 
-	+ 'VALUES (?,?,?,?,?,?,?,?)', e.eventTypeId, e.eventName, e.eventDateStr, e.eventDateValue, e.isLunar, e.isRepeat, e.memo, e.memoImage);
+	db.execute('INSERT INTO tb_event(eventType, eventName, eventDateStr, eventDateValue, isLunar, isRepeat, memo, memoImage) ' 
+	+ 'VALUES (?,?,?,?,?,?,?,?)', e.eventType, e.eventName, e.eventDateStr, e.eventDateValue, e.isLunar, e.isRepeat, e.memo, e.memoImage);
 	db.close();
 };
 
 
+/**
+ * 나와 관련된 이벤트를 모두 가져온다.
+ * 1. 푸마시 이벤트에서 호스트 아이디가 0인 녀석들을 모두 가져온다.
+ * 2. 반환할 모델은 고민좀 해보자. 
+ * 3. 반환 데이터는 무조건 배열, 없으면 빈배열
+ */
 exports.getAllEvent = function() {
+	console.log("************ 나와 관련된 이벤트를 모두 가져온다. *************")
 	var db = Ti.Database.open(DATABASE_NAME);
-	var rows = db.execute('SELECT * FROM tb_event');
+	var rows = db.execute('SELECT * FROM tb_pumassi_events WHERE hostId=0');
 	var data = [];
 	while (rows.isValidRow()) {
 		data.push({
 			eventId : rows.fieldByName('eventId'),
-			eventTypeId : rows.fieldByName('eventTypeId'),
+			eventType : rows.fieldByName('eventType'),
 			eventName : rows.fieldByName('eventName'),
 			eventDateStr : rows.fieldByName('eventDateStr'),
 			eventDateValue : rows.fieldByName('eventDateValue'),

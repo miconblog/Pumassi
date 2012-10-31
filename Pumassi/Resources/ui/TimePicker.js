@@ -7,7 +7,10 @@ var getValue = function(oDate) {
 		sText = "오후"
 	}
 
-	return sText + " " + nHour + "시 " + nMins + "분";
+	return { 
+		str  : sText + " " + nHour + "시 " + nMins + "분",
+		value: nHour*60*60*1000 + nMins * 60*1000 
+	}
 };
 
 var TimePicker = function(lbDate) {
@@ -20,11 +23,12 @@ var TimePicker = function(lbDate) {
 		bottom : 0,
 	});
 
-	// turn on the selection indicator (off by default)
 	picker.selectionIndicator = true;
-
 	picker.addEventListener('change', function(e) {
-		lbDate.text = getValue(e.value);
+		var time = getValue(e.value);
+		console.log("시간 설정: ", time);
+		lbDate.text = time.str;
+		lbDate.value= time.value;
 	});
 
 	var view = Ti.UI.createView({
@@ -42,7 +46,10 @@ var TimePicker = function(lbDate) {
 		style : Ti.UI.iPhone.SystemButtonStyle.PLAIN
 	});
 	btn.addEventListener("click", function(e) {
-		lbDate.text = getValue(picker.getValue());
+		var time = getValue(picker.getValue());
+		
+		lbDate.text  = time.str;
+		lbDate.value = time.value;
 		self.hide();
 	});
 

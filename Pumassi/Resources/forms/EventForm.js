@@ -16,7 +16,7 @@ save.addEventListener('click', function(e) {
 	// DB에 입력 한다.
 	var oData = {
 		eventName : lbType.text,
-		eventTypeId : lbType.typeId,
+		eventType : lbType.eventType,
 		eventDateStr : lbDate.text,
 		eventDateValue : lbDate.value,
 		isLunar : lbLunar.value,
