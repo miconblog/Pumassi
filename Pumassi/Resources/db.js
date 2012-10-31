@@ -14,13 +14,14 @@ exports.addPumasi = function(e) {
 	console.log("************ 품앗이 데이터를 DB에 입력한다. ************", e);
 	var db = Ti.Database.open(DATABASE_NAME);
 	
-	var gBookId = (new Date()).getTime();
-	var lastModified = gBookId;
+	var lastModified = (new Date()).getTime();
+	var guestbookId = "g" + lastModified;
+	var eventId = "e" + lastModified;
 	
 	// 이벤트를 등록한다.	
-	db.execute('INSERT INTO tb_pumassi_events(hostId, hostName, eventType, eventDate,'
+	db.execute('INSERT INTO tb_pumassi_events(eventId, hostId, hostName, eventType, eventDate,'
 		+ 'isLunarDate, isRepeat, lastModified, isCompleted, memo) ' 
-		+ 'VALUES (?,?,?,?,?,?,?,?,?,?)', e.personId, e.personName, e.eventTypeId, e.eventDate + e.eventTime,
+		+ 'VALUES (?,?,?,?,?,?,?,?,?,?)', eventId, e.personId, e.personName, e.eventTypeId, e.eventDate + e.eventTime,
 		 e.isLunar, e.isRepeat, lastModified, 0, e.memo);
 
 	var row = db.execute('SELECT eventId FROM tb_pumassi_events ORDER BY eventId DESC LIMIT 1')
@@ -29,8 +30,8 @@ exports.addPumasi = function(e) {
 		var eventId = row.fieldByName("eventId");
 		
 		// 방명록을 먼저 생성한다.
-		db.execute('INSERT INTO tb_guest_books(gbookId, eventId, guestId, guestName, money, isAttend, memo) ' 
-			+ 'VALUES (?,?,?,?,?,?)',  gBookId, eventId, 0, "나", e.money,  0, "");
+		db.execute('INSERT INTO tb_guest_books(guestbookId, eventId, guestId, guestName, money, isAttend, memo) ' 
+			+ 'VALUES (?,?,?,?,?,?)',  guestbookId, eventId, 0, "나", e.money,  0, "");
 	}
 	db.close();
 };
