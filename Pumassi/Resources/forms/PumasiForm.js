@@ -12,6 +12,19 @@ var save = Ti.UI.createButton({
 	enabled : false
 });
 save.addEventListener('click', function(e) {
+	
+	var isRepeat = 0, eventTime=0;
+	
+	// 기념일
+	if ( eventTypeRow.eventType == 3 ){
+		isRepeat = lbTime.value;
+		eventTime = 0;
+		
+	}else{
+		isRepeat = 0;
+		eventTime = lbTime.value;
+	}
+	
 
 	// DB에 입력 한다.
 	var oData = {
@@ -22,7 +35,8 @@ save.addEventListener('click', function(e) {
 		money 		: parseInt(tfMoney.value, 10) * 10000,
 		eventDate 	: dateRow.value,
 		isLunar 	: lunnarRow.value,
-		eventTime 	: lbTime.value,
+		isRepeat	: isRepeat,
+		eventTime 	: eventTime,
 		memo 		: taMemo.value,
 		memoImgPath : memoRow.filePath
 	};
@@ -164,6 +178,7 @@ var dateRow = Ti.UI.createTableViewRow({
 	height : 40,
 	header : "날짜",
 	title : "날짜 설정",
+	value : 0,
 	font : {
 		fontFamily : 'NanumGothic',
 		fontSize : 14
@@ -237,6 +252,7 @@ timeRow.add(lbTime);
 var memoRow = Ti.UI.createTableViewRow({
 	header : "메모",
 	height : 100,
+	filePath: "",
 	selectionStyle : Ti.UI.iPhone.TableViewCellSelectionStyle.NONE,
 	visible : false
 });
