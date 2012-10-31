@@ -8,7 +8,7 @@ add.addEventListener('click', function(e) {
 		title : '이벤트 등록',
 		modal : true,
 		backgroundColor : '#ccc',
-		url : '/windows/EventForm.js'
+		url : '/forms/EventForm.js'
 	});
 	childWin.open();
 });

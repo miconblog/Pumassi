@@ -1,3 +1,17 @@
+var getDateString = function(dt) {
+	if (dt < 1) {
+		return "날짜 미지정";
+	} else {
+		dt = new Date(dt);
+
+		var Y = dt.getFullYear();
+		var M = dt.getMonth() + 1;
+		var D = dt.getDate();
+
+		return Y + "년 " + M + "월 " + D + "일";
+	}
+};
+
 var win = Ti.UI.currentWindow;
 var add = Ti.UI.createButton({
 	systemButton : Titanium.UI.iPhone.SystemButton.ADD
@@ -14,76 +28,41 @@ add.addEventListener('click', function(e) {
 });
 win.rightNavButton = add;
 
-// Create a TableView.
-var tableView = Ti.UI.createTableView();
-
-// 내가 품앗이 한사람
-
-// var data = [];
-// var data3 = win.data.concat();
-//
-// // for(var i=0; i<data3.length; ++i){
-// // data3[i].
-// // }
-//
-// if (data3.length > 0) {
-// data3[0].header = '내가 품앗이한 사람';
-// data = data.concat(data3);
-// }
-// Populate the TableView data.
-// var data = [{
-// fullName : '홍길동',
-// events : [{
-// type : 1,
-// name : '결혼식',
-// date : '오늘(2012-07-04)'
-// }],
-// hasChild : true,
-// header : '곧 다가올 이벤트'
-// }, {
-// fullName : '이순신',
-// events : [{
-// type : 2,
-// name : '돌잔치',
-// date : '내일모레(2012-07-14)'
-// }],
-// hasChild : true
-// }, {
-// fullName : '이만기',
-// hasChild : true,
-// header : '언젠가는 갚아야하는 사람'
-// }, {
-// fullName : '김상기',
-// hasChild : true,
-// }, {
-// fullName : '장만욱',
-// hasChild : true,
-// value : 50000,
-// header : '내가 품앗이한 사람'
-// }];
-
-tableView.addEventListener('click', function(e) {
-	if (e.source.clickName === 'photo') {
-		alert(e.source.clickName);
-	}
-
+var tableView = Ti.UI.createTableView({
+	editable : true
 });
+tableView.addEventListener('click', function(e) {
+	// 상세정보 열기
+	var detailWin = Ti.UI.createWindow({
+		title : e.rowData.data.personName + " " + e.rowData.data.eventName,
+		data : e.rowData.data,
+		url : "detail/myPumassi.js"
+	});
+
+	Ti.UI.currentTab.open(detailWin);
+});
+tableView.addEventListener("delete", function(e){
+	Ti.App.fireEvent("DELETE_EVENT", { eventId: e.rowData.data.eventId })
+});
+
 win.add(tableView);
 
-///// ###### 이벤트 
+///// ###### 이벤트
 /**
- * 
+ *
  */
 Ti.App.addEventListener("UPDATE_PUMASI_LIST", function(e) {
 	var rows = [];
 	var sections = [];
 	var data = e.data;
 	for (var i = 0; i < data.length; i++) {
+		var item = data[i];
 		var row = Ti.UI.createTableViewRow({
-			height : 60
+			height : 60,
+			data : item
 		});
 
-		var p = Ti.Contacts.getPersonByID(data[i].personId);
+		var person = Ti.Contacts.getPersonByID(item.personId);
 
 		// 대표 사진
 		var img = Ti.UI.createImageView({
@@ -91,17 +70,28 @@ Ti.App.addEventListener("UPDATE_PUMASI_LIST", function(e) {
 			left : 5,
 			width : 50,
 			height : 50,
-			image : p.image || '/images/user_default_pic.png',
+			image : person.image || '/images/user_default_pic.png',
 			clickName : 'photo'
 		});
 		row.add(img);
 
+		// 블릿
+		if (item.isPast && item.isCompleted == 0) {
+			var bullet = Ti.UI.createImageView({
+				image : "/images/bullet.png",
+				left : 0,
+				top : 0,
+				width : 20,
+				height : 20
+			})
+			row.add(bullet);
+		}
 		// 이름
 		var lbName = Ti.UI.createLabel({
 			left : 70,
 			height : 30,
 			width : 'auto',
-			text : data[i].personName,
+			text : item.personName,
 			font : {
 				fontFamily : 'NanumGothic',
 				fontSize : 14,
@@ -116,7 +106,7 @@ Ti.App.addEventListener("UPDATE_PUMASI_LIST", function(e) {
 			left : 175,
 			top : 10,
 			height : 20,
-			text : data[i].eventName,
+			text : item.eventName,
 			font : {
 				fontFamily : 'NanumGothic',
 				fontSize : 13
@@ -131,7 +121,7 @@ Ti.App.addEventListener("UPDATE_PUMASI_LIST", function(e) {
 			left : 175,
 			top : 25,
 			height : 30,
-			text : data[i].dateStr,
+			text : getDateString(item.eventDate),
 			font : {
 				fontFamily : 'NanumGothic',
 				fontSize : 12
@@ -143,7 +133,7 @@ Ti.App.addEventListener("UPDATE_PUMASI_LIST", function(e) {
 		row.add(lbDate);
 		row.hasChild = true;
 
-		if (data[i].header) {
+		if (item.header) {
 			var header = Ti.UI.createView({
 				backgroundColor : '#789',
 				height : 'auto'
@@ -155,7 +145,7 @@ Ti.App.addEventListener("UPDATE_PUMASI_LIST", function(e) {
 					fontSize : 12,
 					fontWeight : 'bold'
 				},
-				text : data[i].header,
+				text : item.header,
 				color : '#222',
 				textAlign : 'left',
 				top : 0,
@@ -178,10 +168,9 @@ Ti.App.addEventListener("UPDATE_PUMASI_LIST", function(e) {
 	tableView.setData(sections);
 });
 
-
 /**
  * 품앗이 탭이 열리면 호출된다. (실질적인 시작점)
  */
-win.addEventListener('open', function(e) {
+win.addEventListener('focus', function(e) {
 	Ti.App.fireEvent("LOAD_PUMASI");
 });

@@ -34,7 +34,7 @@ save.addEventListener('click', function(e) {
 		eventType 	: eventTypeRow.eventType,
 		money 		: parseInt(tfMoney.value, 10) * 10000,
 		eventDate 	: dateRow.value,
-		isLunar 	: lunnarRow.value,
+		isLunar 	: lunarRow.value,
 		isRepeat	: isRepeat,
 		eventTime 	: eventTime,
 		memo 		: taMemo.value,
@@ -116,9 +116,9 @@ eventTypeRow.addEventListener("click", function(e) {
 });
 
 var moneyRow = Ti.UI.createTableViewRow({
-	header : "금액",
-	selectionStyle : Ti.UI.iPhone.TableViewCellSelectionStyle.NONE
+	header : "금액"
 });
+
 var tfMoneyGuide = Ti.UI.createTextField({
 	width : 120,
 	value : ""
@@ -149,9 +149,8 @@ confirm.addEventListener('click', function(e) {
 var tfMoney = Ti.UI.createTextField({
 	color : '#336699',
 	height : 40,
-	top : 5,
 	left : 10,
-	width : 150,
+	width : Ti.UI.FILL,
 	value : "5 만원",
 	returnKeyType : Ti.UI.RETURNKEY_DONE,
 	keyboardToolbar : [tfMoneyGuide, flexSpace, confirm],
@@ -214,11 +213,11 @@ var lunnarSwitch = Ti.UI.createSwitch({
 var datePicker = new (require('/ui/DatePicker'))(dateRow, timeSwitch, lunnarSwitch);
 dateRow.addEventListener("click", function(e) {
 	datePicker.show();
-	lunnarRow.title = "양력";
+	lunarRow.title = "양력";
 	lunnarSwitch.value = false;
 });
 
-var lunnarRow = Ti.UI.createTableViewRow({
+var lunarRow = Ti.UI.createTableViewRow({
 	height : 40,
 	title : "양력/음력 설정",
 	value : 0,
@@ -231,14 +230,14 @@ var lunnarRow = Ti.UI.createTableViewRow({
 
 lunnarSwitch.addEventListener("change", function(e) {
 	if (e.value) {
-		lunnarRow.title = "음력";
-		lunnarRow.value = 1;
+		lunarRow.title = "음력";
+		lunarRow.value = 1;
 	} else {
-		lunnarRow.title = "양력";
-		lunnarRow.value = 0;
+		lunarRow.title = "양력";
+		lunarRow.value = 0;
 	}
 });
-lunnarRow.add(lunnarSwitch);
+lunarRow.add(lunnarSwitch);
 
 var timeRow = Ti.UI.createTableViewRow({
 	height : 40,
@@ -311,7 +310,7 @@ rows.push(nameRow);
 rows.push(eventTypeRow);
 rows.push(moneyRow);
 rows.push(dateRow);
-rows.push(lunnarRow);
+rows.push(lunarRow);
 rows.push(timeRow);
 rows.push(memoRow);
 tableView.setData(rows);

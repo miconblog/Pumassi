@@ -18,21 +18,24 @@ exports.addPumasi = function(e) {
 	var guestbookId = "g" + lastModified;
 	var eventId = "e" + lastModified;
 	
+	
+	// 중복된 이벤트가 있는지 확인
+	var row = db.execute('SELECT eventId FROM tb_pumassi_events WHERE eventType=? AND hostId=?', e.eventType, e.personId);
+	if (row.getRowCount() > 0) {
+		return alert("중복된 이벤트가 있습니다."); 
+	}
+	
+	
 	// 이벤트를 등록한다.	
-	db.execute('INSERT INTO tb_pumassi_events(eventId, hostId, hostName, eventType, eventDate,'
-		+ 'isLunarDate, isRepeat, lastModified, isCompleted, memo) ' 
-		+ 'VALUES (?,?,?,?,?,?,?,?,?,?)', eventId, e.personId, e.personName, e.eventTypeId, e.eventDate + e.eventTime,
+	db.execute('INSERT INTO tb_pumassi_events(eventId, hostId, hostName, eventType, eventDate, eventTime,'
+		+ 'isLunar, isRepeat, lastModified, isCompleted, memo) ' 
+		+ 'VALUES (?,?,?,?,?,?,?,?,?,?,?)', eventId, e.personId, e.personName, e.eventType, e.eventDate + e.eventTime, e.eventTime,
 		 e.isLunar, e.isRepeat, lastModified, 0, e.memo);
 
-	var row = db.execute('SELECT eventId FROM tb_pumassi_events ORDER BY eventId DESC LIMIT 1')
-	if( row.isValidRow() ){
-		
-		var eventId = row.fieldByName("eventId");
-		
-		// 방명록을 먼저 생성한다.
-		db.execute('INSERT INTO tb_guest_books(guestbookId, eventId, guestId, guestName, money, isAttend, memo) ' 
-			+ 'VALUES (?,?,?,?,?,?)',  guestbookId, eventId, 0, "나", e.money,  0, "");
-	}
+	
+	// 방명록을 생성한다.
+	db.execute('INSERT INTO tb_guest_books(guestbookId, eventId, guestId, guestName, money, isAttend, memo) ' 
+			+ 'VALUES (?,?,?,?,?,?,?)',  guestbookId, eventId, 0, "나", e.money,  1, "");
 	db.close();
 };
 
@@ -46,26 +49,55 @@ exports.addPumasi = function(e) {
 exports.getPumasi = function() {
 	console.log("************ 내가 품앗이한 데이터를 가져온다. **************");
 	var db = Ti.Database.open(DATABASE_NAME);
-	var rows = db.execute('SELECT * FROM tb_guest_books WHERE guestId=0');
+	var rows = db.execute('SELECT eventId FROM tb_guest_books WHERE guestId=0');
 	var data = [];
 	while (rows.isValidRow()) {
-		data.push({
-			personId : rows.fieldByName('personId'),
-			personName : rows.fieldByName('personName'),
-			eventName : rows.fieldByName('eventName'),
-			eventType : rows.fieldByName('eventType'),
-			money : rows.fieldByName('money'),
-			dateStr : rows.fieldByName('dateStr'),
-			dateValue : rows.fieldByName('dateValue'),
-			alramStr : rows.fieldByName('alramStr'),
-			alramValue : rows.fieldByName('alramValue'),
-			memo : rows.fieldByName('memo'),
-			memoImage : rows.fieldByName('memoImage')
-		});
+		data.push(rows.fieldByName('eventId'));
 		rows.next();
 	}
+	
+	
+	// 이벤트 타입
+	var eventType = [];
+	rows = db.execute('SELECT * FROM tb_event_type');
+	while (rows.isValidRow()) {
+		eventType.push(rows.fieldByName('eventName'));
+		rows.next();
+	}
+	
+	// 이벤트 정보를 가져온다.
+	var ret = [];
+	for(var i=0; i<data.length; ++i){
+		var eventId = data[i];
+		
+		rows = db.execute('SELECT * FROM tb_pumassi_events WHERE eventId=?', eventId);
+		
+		while (rows.isValidRow()) {
+			ret.push({
+				eventId		: rows.fieldByName('eventId'), 
+				personId 	: rows.fieldByName('hostId'),
+				personName 	: rows.fieldByName('hostName'),
+				eventType 	: rows.fieldByName('eventType'),
+				eventName	: eventType[rows.fieldByName('eventType')-1],
+				eventDate 	: rows.fieldByName('eventDate')-0,
+				eventTime	: rows.fieldByName('eventTime'),
+				isLunar 	: rows.fieldByName('isLunar'),
+				isRepeat 	: rows.fieldByName('isRepeat'),
+				lastModified: rows.fieldByName('lastModified')-0,
+				isCompleted	: rows.fieldByName('isCompleted'),
+				memo 		: rows.fieldByName('memo')
+			});
+			rows.next();
+		}
+	}
 	db.close();
-	return data;
+	
+	ret.sort(function(a, b){
+		return b.eventDate - a.eventDate;
+		//console.log("정렬: ", a.eventDate, b.eventDate);
+	});
+	
+	return ret;
 };
 
 
@@ -85,19 +117,14 @@ exports.getAllEventType = function() {
 	}
 	db.close();
 	return data;
-}
+};
 
+/**
+ * 이벤트 타입을 추가 한다. 
+ */
 exports.addEventType = function(_eventName) {
 	var db = Ti.Database.open(DATABASE_NAME);
 	db.execute('INSERT INTO tb_event_type(eventName) ' + 'VALUES (?)', _eventName);
-	db.close();
-};
-
-
-exports.addEvent = function(e) {
-	var db = Ti.Database.open(DATABASE_NAME);
-	db.execute('INSERT INTO tb_event(eventType, eventName, eventDateStr, eventDateValue, isLunar, isRepeat, memo, memoImage) ' 
-	+ 'VALUES (?,?,?,?,?,?,?,?)', e.eventType, e.eventName, e.eventDateStr, e.eventDateValue, e.isLunar, e.isRepeat, e.memo, e.memoImage);
 	db.close();
 };
 
@@ -153,4 +180,55 @@ exports.getSolarDate = function(sDate){
 	db.close();	
 	return data[0];
 	
-}
+};
+
+exports.getGuestBookInfoById = function(eventId){
+	console.log("************ 방명록 정보를 가져온다. *************")
+	var db = Ti.Database.open(DATABASE_NAME);
+	var rows = db.execute('SELECT * FROM tb_guest_books WHERE eventId=? AND guestId=0', eventId);
+	var data = [];
+	while (rows.isValidRow()) {
+		data.push({
+			guestbookId : rows.fieldByName('guestbookId'),
+			eventId : rows.fieldByName('eventId'),
+			guestId : rows.fieldByName('guestId'),
+			guestName : rows.fieldByName('guestName'),
+			money : rows.fieldByName('money'),
+			isAttend : rows.fieldByName('isAttend'),
+			memo : rows.fieldByName('memo')
+		});
+		rows.next();
+	}
+	db.close();
+	return data[0];
+};
+
+/**
+ * 이벤트 수정
+ */
+exports.updateEvent = function(eventId, field, value){
+	var db = Ti.Database.open(DATABASE_NAME);
+	db.execute('UPDATE tb_pumassi_events SET '+field+'=? WHERE eventId=?', value, eventId);
+	db.close();
+};
+
+/**
+ * 방명록 수정
+ */
+exports.updateGuestbook = function(eventId, field, value){
+	var db = Ti.Database.open(DATABASE_NAME);
+	db.execute('UPDATE tb_guest_books SET '+field+'=? WHERE eventId=?', value, eventId);
+	db.close();
+};
+
+
+/**
+ * 품앗이 이벤트를 삭제한다.
+ * @param {Object} eventId
+ */
+exports.deleteEvent = function(eventId){
+	var db = Ti.Database.open(DATABASE_NAME);
+	db.execute('DELETE FROM tb_pumassi_events WHERE eventId=?', eventId);
+	db.execute('DELETE FROM tb_guest_books WHERE eventId=?', eventId);
+	db.close();
+};
