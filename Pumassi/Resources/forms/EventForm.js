@@ -13,177 +13,214 @@ var save = Ti.UI.createButton({
 });
 save.addEventListener('click', function(e) {
 
+	var isRepeat = 0, eventTime = 0;
+
+	// 기념일
+	if (eventTypeRow.eventType == 3) {
+		isRepeat = lbTime.value;
+		eventTime = 0;
+
+	} else {
+		isRepeat = 0;
+		eventTime = lbTime.value;
+	}
+
 	// DB에 입력 한다.
 	var oData = {
-		eventName : lbType.text,
-		eventType : lbType.eventType,
-		eventDateStr : lbDate.text,
-		eventDateValue : lbDate.value,
-		isLunar : lbLunar.value,
-		isRepeat : lbRepeat.value,
+		eventName : eventTypeRow.title,
+		eventType : eventTypeRow.eventType,
+		eventDate : dateRow.value,
+		isLunar : lunarRow.value,
+		isRepeat : isRepeat,
+		eventTime : eventTime,
 		memo : taMemo.value,
-		memoImage : image.image
+		memoImgPath : memoRow.filePath
 	};
 
-	Ti.App.fireEvent("ADD_EVENT", oData);
+	console.log("입력할 데이터 ", oData);
+
+	Ti.App.fireEvent("ADD_MY_EVENT", oData);
 
 	win.close();
 });
 win.rightNavButton = save;
 
 var checkComplete = function() {
-	if (row2.hasCheck) {
+	if (dateRow.hasCheck) {
 		save.enabled = true;
 	}
 };
 
 // 입력폼
+var rows = [];
 var tableView = Titanium.UI.createTableView({
-	width : 320,
 	//	separatorStyle:Ti.UI.iPhone.TableViewSeparatorStyle.NONE,
-	top : 0,
 	style : Titanium.UI.iPhone.TableViewStyle.GROUPED
 });
 
-var rows = [];
-var row1 = Ti.UI.createTableViewRow({
-	header : "타입",
-	height : 40,
-	hasChild : true
-});
-
-var lbType = Ti.UI.createLabel({
+/**
+ * 이벤트 등록
+ */
+var eventTypeRow = Ti.UI.createTableViewRow({
+	header : "추가할 이벤트를 고르세요.",
+	hasChild : true,
 	color : '#900',
-	width : 280,
-	height : 30,
-	left : 10,
-	top : 5,
-	typeId : 0,
-	text : "결혼식",
-	textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
+	title : "결혼식",
+	value : 0,
+	eventType : 1,
 	font : {
 		fontFamily : 'NanumGothic',
 		fontSize : 15
 	}
 });
-row1.add(lbType);
-var eventPicker = new (require('/ui/EventPicker'))(lbType);
-row1.addEventListener("click", function(e) {
+var lbTime = Ti.UI.createLabel({
+	text : '시간 설정',
+	selectionStyle : Ti.UI.iPhone.TableViewCellSelectionStyle.NONE,
+	value : 0,
+	height : 30,
+	top : 5,
+	left : 10,
+	width : 120,
+	font : {
+		fontFamily : 'NanumGothic',
+		fontSize : 14
+	}
+});
+var timeSwitch = Ti.UI.createSwitch({
+	value : false, // mandatory property for iOS
+	enabled : false,
+	right : 10
+});
+var eventPicker = new (require('/ui/EventPicker'))(eventTypeRow, lbTime, timeSwitch);
+eventTypeRow.addEventListener("click", function(e) {
 	eventPicker.show();
 });
-rows.push(row1)
+rows.push(eventTypeRow);
 
-
-// 날짜
-var row2 = Ti.UI.createTableViewRow({
+/**
+ * 날짜 설정
+ */
+var dateRow = Ti.UI.createTableViewRow({
+	height : 40,
 	header : "날짜",
-	height : 40,
-	hasChild : true
-});
-var lbDate = Ti.UI.createLabel({
-	text : '날짜를 선택하세요.',
-	height : 30,
-	top : 5,
-	left : 10,
-	width : 280,
+	title : "날짜 설정",
+	value : 0,
 	font : {
 		fontFamily : 'NanumGothic',
 		fontSize : 14
 	}
 });
-var datePicker = new (require('/ui/DatePicker'))(lbDate);
-row2.addEventListener("click", function(e) {
+timeSwitch.addEventListener('change', function(e) {
+	if (eventTypeRow.eventType == 3) {
+
+		if (timeSwitch.value) {
+			lbTime.value = 1;
+			lbTime.text = "매년반복";
+		} else {
+			lbTime.value = 0;
+			lbTime.text = "반복없음";
+		}
+		return;
+	}
+
+	if (timeSwitch.value) {
+		timePicker.show();
+	} else {
+		lbTime.text = "시간 설정"
+	}
+});
+var lunnarSwitch = Ti.UI.createSwitch({
+	value : false, // mandatory property for iOS
+	enabled : false,
+	right : 10
+});
+var datePicker = new (require('/ui/DatePicker'))(dateRow, timeSwitch, lunnarSwitch);
+dateRow.addEventListener("click", function(e) {
 	datePicker.show();
-	row2.hasCheck = true;
-	checkComplete();
+	lunarRow.title = "양력";
+	lunnarSwitch.value = false;
+	save.enabled = true;
 });
-row2.add(lbDate)
-rows.push(row2);
+rows.push(dateRow);
 
-
-// 양력 / 음력
-var row3 = Ti.UI.createTableViewRow({
+/**
+ * 양력/음력 설정
+ */
+var lunarRow = Ti.UI.createTableViewRow({
 	height : 40,
-});
-
-var lbLunar = Ti.UI.createLabel({
-	text : '양력',
-	height : 30,
-	top : 5,
-	left : 10,
-	width : 280,
+	title : "양력/음력 설정",
+	value : 0,
+	selectionStyle : Ti.UI.iPhone.TableViewCellSelectionStyle.NONE,
 	font : {
 		fontFamily : 'NanumGothic',
 		fontSize : 14
 	}
 });
-row3.add(lbLunar);
-
-var calSwitch = Ti.UI.createSwitch({
-	value : false, // mandatory property for iOS
-	right : 10
-});
-calSwitch.addEventListener('change', function(e) {
-	if (calSwitch.value) {
-		lbLunar.text = '음력';
-		lbLunar.value = 1;
+lunnarSwitch.addEventListener("change", function(e) {
+	if (e.value) {
+		lunarRow.title = "음력";
+		lunarRow.value = 1;
 	} else {
-		lbLunar.text = "양력";
-		lbLunar.value = 0;
+		lunarRow.title = "양력";
+		lunarRow.value = 0;
 	}
 });
-row3.add(calSwitch);
-rows.push(row3);
+lunarRow.add(lunnarSwitch);
+rows.push(lunarRow);
 
-
-// 반복 주기
-var row4 = Ti.UI.createTableViewRow({
+/**
+ * 시간 설정
+ */
+var timeRow = Ti.UI.createTableViewRow({
 	height : 40,
+	selectionStyle : Ti.UI.iPhone.TableViewCellSelectionStyle.NONE
 });
-var lbRepeat = Ti.UI.createLabel({
-	text : '매년 반복 안함',
-	height : 30,
-	top : 5,
-	left : 10,
-	width : 280,
-	font : {
-		fontFamily : 'NanumGothic',
-		fontSize : 14
-	},
-	value : 0
-});
-var cycleSwitch = Ti.UI.createSwitch({
-	value : false, // mandatory property for iOS
-	right : 10
-});
-cycleSwitch.addEventListener('change', function(e) {
-	if (cycleSwitch.value) {
-		lbRepeat.text = '매년 반복';
-		lbRepeat.value = 1;
-	} else {
-		lbRepeat.text = '매년 반복 안함';
-		lbRepeat.value = 0;
-	}
-});
-row4.add(lbRepeat);
-row4.add(cycleSwitch);
-rows.push(row4);
 
+var timePicker = new (require('/ui/TimePicker'))(lbTime);
+timeRow.add(timeSwitch);
+timeRow.add(lbTime);
+rows.push(timeRow);
 
-// 메모 
-var row6 = Ti.UI.createTableViewRow({
+/**
+ * 메모 설정
+ */
+var memoRow = Ti.UI.createTableViewRow({
 	header : "메모",
-	height : 100
+	height : 100,
+	filePath : "",
+	selectionStyle : Ti.UI.iPhone.TableViewCellSelectionStyle.NONE,
+	visible : false
 });
-
-var image = Ti.UI.createImageView({
+var imgView = Ti.UI.createImageView({
 	image : '/images/camera.png',
-	widht : 80,
+	width : 80,
 	height : 80,
 	left : 10,
 	top : 10
 });
-row6.add(image);
+imgView.addEventListener('click', function() {
+	var dialog = Titanium.UI.createOptionDialog({
+		options : ['사진 찍기', '사진 선택', '취소'],
+		cancel : 2,
+		title : '사진을 추가할까요?!'
+	});
+	dialog.addEventListener("click", function(e) {
+		switch(e.index) {
+			case 0:
+				// 카메라
+				openCamera();
+				break;
+
+			case 1:
+				// 앨범
+				openPhotoAlbum();
+				break;
+		}
+
+	});
+	dialog.show();
+
+});
 
 var taMemo = Ti.UI.createTextArea({
 	color : '#888',
@@ -192,25 +229,26 @@ var taMemo = Ti.UI.createTextArea({
 		fontSize : 14
 	},
 	keyboardType : Ti.UI.KEYBOARD_DEFAULT,
-	returnKeyType : Ti.UI.RETURNKEY_DONE,
 	textAlign : 'left',
 	top : 10,
 	left : 90,
 	width : 200,
 	height : 80
 });
-row6.add(taMemo);
-rows.push(row6);
+taMemo.addEventListener("click", function(e) {
+	tableView.scrollToIndex(6);
+});
+memoRow.add(imgView);
+memoRow.add(taMemo);
+rows.push(memoRow);
 
 tableView.setData(rows);
 win.add(tableView);
 
-
-
-win.addEventListener("open", function(e){
+win.addEventListener("open", function(e) {
 	Ti.App.fireEvent("GET_EVENT_TYPE");
 });
-Ti.App.addEventListener("UPDATE_EVENT_TYPE", function(e){
+Ti.App.addEventListener("UPDATE_EVENT_TYPE", function(e) {
 	console.log('UPDATE_EVENT_TYPE', e.data);
 	eventPicker.setData(e.data);
 });

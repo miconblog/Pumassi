@@ -56,12 +56,15 @@ var checkComplete = function() {
 };
 
 // 입력폼
+
+var rows = [];
 var tableView = Titanium.UI.createTableView({
 	style : Titanium.UI.iPhone.TableViewStyle.GROUPED
 });
 
-var rows = [];
-
+/**
+ * 이름 입력
+ */
 var nameRow = Ti.UI.createTableViewRow({
 	header : "이름",
 	title : "이름을 선택하세요",
@@ -81,6 +84,12 @@ nameRow.addEventListener("click", function(e) {
 		}
 	});
 })
+rows.push(nameRow);
+
+
+/**
+ * 이벤트 등록
+ */
 var eventTypeRow = Ti.UI.createTableViewRow({
 	hasChild : true,
 	color : '#900',
@@ -114,7 +123,12 @@ var eventPicker = new (require('/ui/EventPicker'))(eventTypeRow, lbTime, timeSwi
 eventTypeRow.addEventListener("click", function(e) {
 	eventPicker.show();
 });
+rows.push(eventTypeRow);
 
+
+/**
+ * 금액 입력
+ */
 var moneyRow = Ti.UI.createTableViewRow({
 	header : "금액"
 });
@@ -169,9 +183,11 @@ tfMoney.addEventListener("change", function(e) {
 	tfMoneyGuide.value += " 만원";
 });
 moneyRow.add(tfMoney);
+rows.push(moneyRow);
+
 
 /**
- * 날짜 설정, 양력/음력, 시간 설정
+ * 날짜 설정
  */
 var dateRow = Ti.UI.createTableViewRow({
 	height : 40,
@@ -183,10 +199,7 @@ var dateRow = Ti.UI.createTableViewRow({
 		fontSize : 14
 	}
 });
-
-
 timeSwitch.addEventListener('change', function(e) {
-	
 	if ( eventTypeRow.eventType == 3 ){
 		
 		if (timeSwitch.value) {
@@ -216,7 +229,13 @@ dateRow.addEventListener("click", function(e) {
 	lunarRow.title = "양력";
 	lunnarSwitch.value = false;
 });
+rows.push(dateRow);
 
+
+
+/**
+ * 양력/음력 설정
+ */
 var lunarRow = Ti.UI.createTableViewRow({
 	height : 40,
 	title : "양력/음력 설정",
@@ -227,7 +246,6 @@ var lunarRow = Ti.UI.createTableViewRow({
 		fontSize : 14
 	}
 });
-
 lunnarSwitch.addEventListener("change", function(e) {
 	if (e.value) {
 		lunarRow.title = "음력";
@@ -238,7 +256,13 @@ lunnarSwitch.addEventListener("change", function(e) {
 	}
 });
 lunarRow.add(lunnarSwitch);
+rows.push(lunarRow);
 
+
+
+/**
+ * 시간 설정
+ */
 var timeRow = Ti.UI.createTableViewRow({
 	height : 40,
 	selectionStyle : Ti.UI.iPhone.TableViewCellSelectionStyle.NONE
@@ -247,7 +271,12 @@ var timeRow = Ti.UI.createTableViewRow({
 var timePicker = new (require('/ui/TimePicker'))(lbTime);
 timeRow.add(timeSwitch);
 timeRow.add(lbTime);
+rows.push(timeRow);
 
+
+/**
+ * 메모 설정
+ */
 var memoRow = Ti.UI.createTableViewRow({
 	header : "메모",
 	height : 100,
@@ -302,17 +331,11 @@ var taMemo = Ti.UI.createTextArea({
 taMemo.addEventListener("click", function(e) {
 	tableView.scrollToIndex(6);
 });
-
 memoRow.add(imgView);
 memoRow.add(taMemo);
-
-rows.push(nameRow);
-rows.push(eventTypeRow);
-rows.push(moneyRow);
-rows.push(dateRow);
-rows.push(lunarRow);
-rows.push(timeRow);
 rows.push(memoRow);
+
+
 tableView.setData(rows);
 
 var openCamera = function() {

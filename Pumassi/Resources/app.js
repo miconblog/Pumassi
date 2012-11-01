@@ -65,55 +65,48 @@ Ti.App.addEventListener("ADD_EVENT_TYPE", function(e) {
 	});
 });
 
-Ti.App.addEventListener("ADD_EVENT", function(e) {
-	db.addEvent(e);
-	Ti.App.fireEvent("RELOAD_EVENT");
-});
 
-Ti.App.addEventListener("RELOAD_EVENT", function(e) {
+Ti.App.addEventListener("LOAD_MY_EVENT", function(e) {
 
-	var data = db.getAllEvent();
+	var data = db.getMyEvent();
 	var now = new Date().getTime();
+	var hasComingEvent = false;
+	var hasPastEvent = false;
 
-	var comingData = []
-	for (var i = data.length - 1; i > -1; --i) {
+	for (var i = 0; i < data.length; ++i) {
+		var item = data[i];
 
-		if (data[i].isLunar) {
+		console.log(i, "이벤트 정보: ", item.eventDate, now);
 
-			// 등록한 날짜를 변환해서 사용
-			var oDate = db.getSolarDate(data[i].eventDateValue);
-			data[i].dateValue = (new Date(oDate.solar_date)).getTime();
-
+		if (item.eventDate - 0 >= now) {
+			item.isPast = false;
+			if (!hasComingEvent) {
+				item.header = "곧 다가올 행사";
+				hasComingEvent = true;
+			}
 		} else {
-
-			// 등록한 날짜를 그대로 기준 날짜로 사용
-			data[i].dateValue = data[i].eventDateValue;
-		}
-
-		if (data[i].dateValue && data[i].dateValue > now) {
-			comingData.push(data.splice(i,1)[0])
+			item.isPast = true;
+			if (!hasPastEvent) {
+				item.header = "지난 이벤트";
+				hasPastEvent = true;
+			}
 		}
 	}
 
-	if (comingData.length > 0) {
-		comingData[0].header = '곧 다가올 이벤트';
-	}
-
-	if (data.length > 0) {
-		data[0].header = '지난 이벤트';
-	}
 
 	Ti.App.fireEvent("UPDATE_EVENT_LIST", {
-		data : comingData.concat(data)
+		data : data
 	});
 });
 
 Ti.App.addEventListener("ADD_PUMASI", function(e) {
-	Ti.API.info(["ADD_PUMASI", e]);
-
 	db.addPumasi(e);
-
 	Ti.App.fireEvent("LOAD_PUMASI");
+});
+
+Ti.App.addEventListener("ADD_MY_EVENT", function(e){
+	db.addMyEvent(e);
+	Ti.App.fireEvent("LOAD_MY_EVENT");	
 });
 
 /**
