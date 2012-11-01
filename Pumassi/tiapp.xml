@@ -8,14 +8,14 @@
         <target device="blackberry">false</target>
     </deployment-targets>
     <sdk-version>2.1.3.GA</sdk-version>
-    <id>com.miconblog.pumassi</id>
+    <id>com.miconblog.pumasi</id>
     <name>Pumassi</name>
     <version>1.0</version>
     <publisher>realrap</publisher>
     <url>http://miconblog.com/#/projects/pumassi</url>
     <description>not specified</description>
     <copyright>2012 by realrap</copyright>
-    <icon>appicon.png</icon>
+    <icon>pumassi.png</icon>
     <persistent-wifi>false</persistent-wifi>
     <prerendered-icon>false</prerendered-icon>
     <statusbar-style>default</statusbar-style>
