@@ -2,29 +2,29 @@
  *   LINE 브러시맵 코드      
  */
 
-var oBrushMapBar = nchart.createBrushMap({
+var oBrushMapBarYear = nchart.createBrushMap({
 	type: 'LINE'
 });
 
-oBrushMapBar.setInitHandler(function (data) {
+oBrushMapBarYear.setInitHandler(function (data) {
     var canvas = document.createElement("canvas"),
         context = canvas.getContext('2d');  
   
     canvas.width = data.w;
     canvas.height = data.h;
-    document.getElementById('drawMoneyByMonth').appendChild(canvas);
+    document.getElementById('drawMoneyByYear').appendChild(canvas);
   
     this.setBrushMapData('ctx', context);  
 
 });
 
-oBrushMapBar.setDefaultMethodOfBrush({
+oBrushMapBarYear.setDefaultMethodOfBrush({
 	init: function (data, info) {
 		this.ctx = this.getBrushMapData('ctx');
 	}
 });
 
-oBrushMapBar.addBrush('baseline', {
+oBrushMapBarYear.addBrush('baseline', {
     init: function (data, info) {    
 		this.ctx = this.getBrushMapData('ctx');
     },
@@ -48,7 +48,7 @@ oBrushMapBar.addBrush('baseline', {
     }
 });
 
-oBrushMapBar.addBrush('verticalGridline', {
+oBrushMapBarYear.addBrush('verticalGridline', {
     getMarginFromBaseline: function (data, info) {
 		return {
 			left : 30,
@@ -69,7 +69,7 @@ oBrushMapBar.addBrush('verticalGridline', {
 	}
 });
 
-oBrushMapBar.addBrush('horizontalGridline', {
+oBrushMapBarYear.addBrush('horizontalGridline', {
 
 	drawEachHorizontalGridline: function (data, info) {
       
@@ -89,7 +89,7 @@ oBrushMapBar.addBrush('horizontalGridline', {
 	}
 });
 
-oBrushMapBar.addBrush('line', {
+oBrushMapBarYear.addBrush('line', {
 	drawEachPoint: function (data, info) {
       
       this.ctx.moveTo(data.x, data.y);
@@ -99,12 +99,12 @@ oBrushMapBar.addBrush('line', {
     }
 });
 
-oBrushMapBar.addBrush('line', {
+oBrushMapBarYear.addBrush('line', {
 	drawEachPoint: function (data, info) {
       
       this.ctx.moveTo(data.x, data.y);
       this.ctx.lineTo(data.xNext, data.yNext);
-      this.ctx.strokeStyle = "#08f";
+      this.ctx.strokeStyle = "#3dA";
       this.ctx.lineWidth = 2;
       this.ctx.stroke();		
 	}
@@ -123,11 +123,11 @@ oBrushMapBar.addBrush('line', {
  */
 
 
-function drawMoneyByMonth(aData){
+function drawMoneyByYear(aData){
 	
 	for(var i = 0 ; i < aData.length ;++i){
 	
-		aData[i][0] += "월";
+		aData[i][0] += "년";
 	}
 
 	var oDataTable = nchart.createDataTable();
@@ -139,6 +139,6 @@ function drawMoneyByMonth(aData){
 		height: 240
 	});
 
-	oChart.setBrushMap(oBrushMapBar).setDataTable(oDataTable).init().draw();
+	oChart.setBrushMap(oBrushMapBarYear).setDataTable(oDataTable).init().draw();
 
 }
