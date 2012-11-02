@@ -46,7 +46,7 @@ Ti.App.addEventListener("UPDATE_EVENT_LIST", function(e) {
 			height : 60
 		});
 
-		// 이름
+		// 행사 이름
 		var lbName = Ti.UI.createLabel({
 			left : 10,
 			height : 30,

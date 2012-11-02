@@ -162,6 +162,14 @@ Ti.App.addEventListener("LOAD_GUEST_BOOK", function(e) {
 Ti.App.addEventListener("CHECK_EVENT_COMFIRM", function(e) {
 	db.updateEvent(e.eventId, "isCompleted", 1);
 });
+Ti.App.addEventListener("UPDATE_EVENT_DATE", function(e){
+	db.updateEvent(e.eventId, "eventDate", e.value);
+});
+Ti.App.addEventListener("UPDATE_EVENT_TIME", function(e){
+	db.updateEvent(e.eventId, "eventDate", e.value);
+	db.updateEvent(e.eventId, "eventTime", e.eventTime);
+});
+
 
 /**
  * 이벤트 삭제
@@ -173,6 +181,14 @@ Ti.App.addEventListener("DELETE_EVENT", function(e){
 /**
  * 이벤트 참석 유무 결정
  */
-Ti.App.addEventListener("UPDATE_EVENT_ATTEND", function(e){
+Ti.App.addEventListener("UPDATE_GUESTBOOK_ATTEND", function(e){
 	db.updateGuestbook(e.eventId, "isAttend", e.value);
+});
+
+Ti.App.addEventListener("UPDATE_GUESTBOOK_MEMO", function(e){
+	db.updateGuestbook(e.eventId, "memo", e.value);
+});
+
+Ti.App.addEventListener("UPDATE_GUESTBOOK_MONEY", function(e){
+	db.updateGuestbook(e.eventId, "money", e.value);
 });

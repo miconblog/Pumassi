@@ -1,5 +1,6 @@
 var DatePicker = function(rowDate, alramSwitch, lunnarSwitch) {
 	var self = this;
+	this._callback = {};
 
 	// 날짜 선택
 	var minDate = new Date();
@@ -31,6 +32,10 @@ var DatePicker = function(rowDate, alramSwitch, lunnarSwitch) {
 		rowDate.title = Y +"년 " + M + "월 " + D + "일";
 		rowDate.dtStr = Y +"년 " + M + "월 " + D + "일";
 		rowDate.value = (new Date(Y+"/"+M+"/"+D)).getTime();
+		
+		if( self._callback['complete'] ){
+			self._callback['complete']();
+		}
 	});
 	picker.selectionIndicator = true;
 
@@ -64,6 +69,10 @@ var DatePicker = function(rowDate, alramSwitch, lunnarSwitch) {
 			lunnarSwitch.enabled = true;
 		}
 		self.hide();
+		if( self._callback['complete'] ){
+			self._callback['complete']();
+		}
+		
 	});
 
 	var bar = Ti.UI.createView({
@@ -117,6 +126,13 @@ var DatePicker = function(rowDate, alramSwitch, lunnarSwitch) {
 		}, function(e) {
 			Ti.UI.currentWindow.remove(view);
 		})
+	}
+	
+	this.on = function(name, callback){
+		if( self._callback[name] ){
+			self._callback[name] = null;
+		}
+		self._callback[name] = callback;
 	}
 
 	return self;

@@ -7,14 +7,15 @@ var getValue = function(oDate) {
 		sText = "오후"
 	}
 
-	return { 
-		str  : sText + " " + nHour + "시 " + nMins + "분",
-		value: nHour*60*60*1000 + nMins * 60*1000 
+	return {
+		str : sText + " " + nHour + "시 " + nMins + "분",
+		value : nHour * 60 * 60 * 1000 + nMins * 60 * 1000
 	}
 };
 
 var TimePicker = function(lbDate) {
 	var self = this;
+	this._callback = {};
 
 	var value = new Date();
 	var picker = Ti.UI.createPicker({
@@ -28,7 +29,11 @@ var TimePicker = function(lbDate) {
 		var time = getValue(e.value);
 		console.log("시간 설정: ", time);
 		lbDate.text = time.str;
-		lbDate.value= time.value;
+		lbDate.value = time.value;
+		
+		if( self._callback['complete'] ){
+			self._callback['complete']();
+		}
 	});
 
 	var view = Ti.UI.createView({
@@ -47,10 +52,15 @@ var TimePicker = function(lbDate) {
 	});
 	btn.addEventListener("click", function(e) {
 		var time = getValue(picker.getValue());
-		
-		lbDate.text  = time.str;
+
+		lbDate.title = time.str;
+		lbDate.text = time.str;
 		lbDate.value = time.value;
 		self.hide();
+		
+		if( self._callback['complete'] ){
+			self._callback['complete']();
+		}
 	});
 
 	var bar = Ti.UI.createView({
@@ -106,6 +116,12 @@ var TimePicker = function(lbDate) {
 		})
 	}
 
+	this.on = function(name, callback) {
+		if (self._callback[name]) {
+			self._callback[name] = null;
+		}
+		self._callback[name] = callback;
+	}
 	return self;
 }
 

@@ -40,7 +40,7 @@ win.add(tableView);
 Ti.App.addEventListener("LOADED_GUEST_BOOK", function(e) {
 	console.log(e);
 	var rows = [];
-	
+
 	/**
 	 * 참석 여부 설정
 	 */
@@ -62,7 +62,7 @@ Ti.App.addEventListener("LOADED_GUEST_BOOK", function(e) {
 			value : e.data.isAttend ? true : false
 		});
 		attendSwitch.addEventListener("change", function(e) {
-			Ti.App.fireEvent("UPDATE_EVENT_ATTEND", {
+			Ti.App.fireEvent("UPDATE_GUESTBOOK_ATTEND", {
 				eventId : win.data.eventId,
 				value : e.value
 			});
@@ -110,9 +110,15 @@ Ti.App.addEventListener("LOADED_GUEST_BOOK", function(e) {
 			return;
 		}
 
-		tfMoney.value = parseInt(tfMoney.value, 10);
+		var money = parseInt(tfMoney.value, 10);
+		tfMoney.value = money;
 		tfMoney.value += " 만원";
 		tfMoney.blur();
+
+		Ti.App.fireEvent("UPDATE_GUESTBOOK_MONEY", {
+			eventId : win.data.eventId,
+			value : money * 10000
+		});
 	});
 
 	var tfMoney = Ti.UI.createTextField({
@@ -147,11 +153,20 @@ Ti.App.addEventListener("LOADED_GUEST_BOOK", function(e) {
 		height : 40,
 		header : "날짜",
 		title : getDateString(win.data.eventDate),
-		value : 0,
+		value : win.data.eventDate,
 		font : {
 			fontFamily : 'NanumGothic',
 			fontSize : 14
 		}
+	});
+
+	var datePicker = new (require('/ui/DatePicker'))(dateRow);
+	datePicker.on("complete", function(e){
+		Ti.App.fireEvent("UPDATE_EVENT_DATE", {eventId: win.data.eventId, value: dateRow.value})
+	});
+	dateRow.addEventListener("click", function(e) {
+		tableView.scrollToIndex(6);
+		datePicker.show();
 	});
 	rows.push(dateRow);
 
@@ -161,12 +176,25 @@ Ti.App.addEventListener("LOADED_GUEST_BOOK", function(e) {
 	var timeRow = Ti.UI.createTableViewRow({
 		backgroundColor : "#FFF",
 		height : 40,
+		value : win.data.eventTime,
 		title : getTimeString(win.data.eventDate, win.data.eventTime),
-		value : 0,
 		font : {
 			fontFamily : 'NanumGothic',
 			fontSize : 14
 		}
+	});
+	
+	var timePicker = new (require('/ui/TimePicker'))(timeRow);
+	timePicker.on("complete", function(e){
+		var dt = new Date(dateRow.value);
+		dt.setHours(0);
+		dt.setMinutes(0);
+		
+		Ti.App.fireEvent("UPDATE_EVENT_TIME", {eventId: win.data.eventId, value: dt.getTime() + timeRow.value, eventTime:timeRow.value})
+	});
+	timeRow.addEventListener("click", function(e) {
+		tableView.scrollToIndex(6);
+		timePicker.show();
 	});
 	rows.push(timeRow);
 
@@ -178,19 +206,24 @@ Ti.App.addEventListener("LOADED_GUEST_BOOK", function(e) {
 		header : "메모"
 	});
 	var taMemo = Ti.UI.createTextArea({
-		color : '#888',
 		font : {
 			fontFamily : "NanumGothic",
 			fontSize : 14
 		},
+		value : e.data.memo,
 		keyboardType : Ti.UI.KEYBOARD_DEFAULT,
+		returnKeyType: Ti.UI.RETURNKEY_DONE,
 		textAlign : 'left',
 		width : Ti.UI.FILL,
 		borderRadius : 10,
 		height : 80
 	});
 	taMemo.addEventListener("click", function(e) {
-		tableView.scrollToIndex(6);
+		tableView.scrollToIndex(4);
+	});
+	taMemo.addEventListener("return", function(e) {
+		console.log("******* 메모 저장 *******", taMemo.value);
+		Ti.App.fireEvent("UPDATE_GUESTBOOK_MEMO", {eventId: win.data.eventId, value: taMemo.value});
 	});
 	memoRow.add(taMemo);
 	rows.push(memoRow);

@@ -35,10 +35,10 @@ exports.addPumasi = function(e) {
 	
 
 	// 이벤트를 등록한다.
-	db.execute('INSERT INTO tb_pumassi_events(eventId, hostId, hostName, eventType, eventDate, eventTime,' + 'isLunar, isRepeat, lastModified, isCompleted, memo) ' + 'VALUES (?,?,?,?,?,?,?,?,?,?,?)', eventId, e.personId, e.personName, e.eventType, e.eventDate + e.eventTime, e.eventTime, e.isLunar, e.isRepeat, lastModified, 0, e.memo);
+	db.execute('INSERT INTO tb_pumassi_events(eventId, hostId, hostName, eventType, eventDate, eventTime,' + 'isLunar, isRepeat, lastModified, isCompleted, memo) ' + 'VALUES (?,?,?,?,?,?,?,?,?,?,?)', eventId, e.personId, e.personName, e.eventType, e.eventDate + e.eventTime, e.eventTime, e.isLunar, e.isRepeat, lastModified, 0, '');
 
 	// 방명록을 생성한다.
-	db.execute('INSERT INTO tb_guest_books(guestbookId, eventId, guestId, guestName, money, isAttend, memo) ' + 'VALUES (?,?,?,?,?,?,?)', guestbookId, eventId, 0, "나", e.money, 1, "");
+	db.execute('INSERT INTO tb_guest_books(guestbookId, eventId, guestId, guestName, money, isAttend, memo) ' + 'VALUES (?,?,?,?,?,?,?)', guestbookId, eventId, 0, "나", e.money, 1, e.memo);
 	db.close();
 };
 
@@ -242,6 +242,7 @@ exports.getGuestBookInfoById = function(eventId) {
 exports.updateEvent = function(eventId, field, value) {
 	var db = Ti.Database.open(DATABASE_NAME);
 	db.execute('UPDATE tb_pumassi_events SET ' + field + '=? WHERE eventId=?', value, eventId);
+	db.execute('UPDATE tb_pumassi_events SET lastModified=? WHERE eventId=?', new Date().getTime(), eventId);
 	db.close();
 };
 
@@ -251,6 +252,7 @@ exports.updateEvent = function(eventId, field, value) {
 exports.updateGuestbook = function(eventId, field, value) {
 	var db = Ti.Database.open(DATABASE_NAME);
 	db.execute('UPDATE tb_guest_books SET ' + field + '=? WHERE eventId=?', value, eventId);
+	db.execute('UPDATE tb_pumassi_events SET lastModified=? WHERE eventId=?', new Date().getTime(), eventId);
 	db.close();
 };
 
