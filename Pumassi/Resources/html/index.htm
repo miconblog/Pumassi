@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>PUMASSI</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
+	<link rel="stylesheet" type="text/css" href="css/css.css">
+</head>
+<body>
+<div class="container">
+	<header>
+	<div class="top_ul_box">
+		<ul class="top_ul">
+			<li class="top_ul_li" style="width:15%">
+				<a href="#" class="link_block">STATISTICS</a>
+			</li>
+		</ul>
+	</div>
+	</header>
+</div>
+<div class="h2_box _label"><a href="#" name="free"></a><div class="h2_link"><h3 class="h2_tex"></h3></div></div>
+<ul class="lst_ct shape3 _list" id="list">
+	<li class="thmb  mainColor" style="text-align:center;padding-top:20px;height:30px;">
+		<span style="padding-top:20px;" ><h3>총 지출</h3></span>
+	</li>
+	<li class="thmb " style="text-align:center;height:40px;padding-top:5px;">
+		<span style="text-decoration:underline;font-size:20pt" ><h3>1,000,0000원</h3></span>
+	</li>
+</ul>		
+
+<div id="drawMoneyByEvent"></div>
+<ul class="lst_ct shape3 _list" id="list">
+	<li class="thmb " style="text-align:center;height:30px;">
+		<span style="padding-top:20px;" ><h3>이벤트별 지출</h3></span>
+	</li>
+</ul>
+<br/>
+
+<div id="drawMoneyByMonth"></div>
+<ul class="lst_ct shape3 _list" id="list">
+	<li class="thmb " style="text-align:center;height:30px;">
+		<span style="padding-top:20px;" ><h3>월별 지출</h3></span>
+	</li>
+</ul>
+<br/>
+
+<div id="drawEventByMonth"></div>
+<ul class="lst_ct shape3 _list" id="list">
+	<li class="thmb " style="text-align:center;height:30px;">
+		<span style="padding-top:20px;" ><h3>월별 이벤트</h3></span>
+	</li>
+</ul>
+<br/>
+
+<div id="container">
+		
+</div>
+<ul class="lst_ct shape3 _list" id="list">
+	<li class="thmb " style="text-align:center;height:30px;">
+		<span style="padding-top:20px;" ><h3>이벤트 비율</h3></span>
+	</li>
+</ul>
+<br/>
+
+<script type="text/javascript" src = "js/nchart-1.0.1.min.js"></script>
+<script type="text/javascript" src = "js/line_moneyByMonth.js"></script>
+<script type="text/javascript" src = "js/line_eventByMonth.js"></script>
+<script type="text/javascript" src = "js/pie_eventCount.js"></script>
+<script type="text/javascript" src = "js/bar_moneyByEvent.js"></script>
+<script type="text/javascript" src = "js/util.js"></script>
+<script>
+
+//SELECT eventType, Sum(money) FROM tb_pumassi_events A, tb_guest_books B Where A.eventId = B.eventId Group by  A.eventType
+drawMoneyByEvent([
+		['1', 250000], // eventType, 금액합
+		['2', 250000],
+		['3', 1542000],
+		['4', 162000],
+		['5', 361000]
+
+]);
+
+//select   strftime( "%m", strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , "unixepoch") , Sum(money)  FROM tb_pumassi_events A, tb_guest_books B where A.eventId = B.eventId Group by strftime( "%m", strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , "unixepoch") 
+drawMoneyByMonth([
+		['01', 250000], // 월, 금액합
+		['02', 1000000],
+		['03', 250000],
+		['04', 361000],
+		['05', 1542000],
+		['06', 162000]
+]);
+
+
+//select   strftime( "%m", strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , "unixepoch") , COUNT(*)  FROM tb_pumassi_events A, tb_guest_books B where A.eventId = B.eventId Group by strftime( "%m", strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , "unixepoch")
+drawEventByMonth([
+		['01', 1], // 월별 이벤트
+		['02', 1],
+		['03', 1],
+		['04', 1],
+		['05', 2],
+		['06', 3]
+]);
+
+//SELECT eventType, COUNT(*) FROM tb_pumassi_events A, tb_guest_books B Where A.eventId = B.eventId Group by  A.eventType
+drawEventCountDonut([
+		['1', 6], // eventType, 합
+		['2', 2],
+		['3', 1],
+		['4', 1],
+		['5', 1]
+]);
+</script>
+<div style="text-align:center;line-height:0.00em">
+	<div class="footer">
+		<footer>
+			<p class="u_cr">
+				<span class="u_cri u_cri_v1">pumassi</span>
+			</p>    
+		</footer>
+	</div>
+</div>
+</body>
+</html>
