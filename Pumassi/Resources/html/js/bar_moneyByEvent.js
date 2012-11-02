@@ -81,7 +81,7 @@ oBrushMap.addBrush('horizontalGridline', {
         this.ctx.font = "13px Arial";
         this.ctx.fillStyle ="#000";
 
-		var nMoney = Math.round(util.getNumberFormat( data.value / 10000 )) + "만";
+		var nMoney = util.getNumberFormat( Math.round(data.value / 10000 )) + "만";
 
         this.ctx.fillText( nMoney, data.x - 10, data.y + 5);
 	}
