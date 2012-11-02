@@ -23,16 +23,14 @@ exports.addPumasi = function(e) {
 	if (row.getRowCount() > 0) {
 		return alert("중복된 이벤트가 있습니다.");
 	}
-	
+
 	// 음력이면 양력으로 변환해서 넣는다.
 	// if (data[i].isLunar) {
-// 
-			// // 등록한 날짜를 변환해서 사용
-			// var oDate = db.getSolarDate(data[i].eventDate);
-			// data[i].dateValue = (new Date(oDate.solar_date)).getTime();
-		// } 
-		
-	
+	//
+	// // 등록한 날짜를 변환해서 사용
+	// var oDate = db.getSolarDate(data[i].eventDate);
+	// data[i].dateValue = (new Date(oDate.solar_date)).getTime();
+	// }
 
 	// 이벤트를 등록한다.
 	db.execute('INSERT INTO tb_pumassi_events(eventId, hostId, hostName, eventType, eventDate, eventTime,' + 'isLunar, isRepeat, lastModified, isCompleted, memo) ' + 'VALUES (?,?,?,?,?,?,?,?,?,?,?)', eventId, e.personId, e.personName, e.eventType, e.eventDate + e.eventTime, e.eventTime, e.isLunar, e.isRepeat, lastModified, 0, '');
@@ -189,6 +187,40 @@ exports.getMyEvent = function() {
 	}
 	db.close();
 	return ret;
+};
+
+/**
+ * 이벤트 상세 정보를 반환한다.
+ */
+exports.getMyEventById = function(eventId, eventType, eventName) {
+	var db = Ti.Database.open(DATABASE_NAME);
+
+	// 방명록을 뒤져서 내가 돈을 냈거나 참석한 이벤트를 가져온다.
+	var rows = db.execute('SELECT * FROM tb_guest_books WHERE guestId=0');
+	var data = [];
+	while (rows.isValidRow()) {
+		data.push({
+			eventId : rows.fieldByName('eventId'),
+			money : rows.fieldByName('money'),
+			isAttend : rows.fieldByName('isAttend'),
+			memo : rows.fieldByName('memo')
+		});
+		rows.next();
+	}
+
+	// 해당 이벤트의 주체자를 모두 가져온다.
+	for (var i = 0; i < data.length; ++i) {
+		var item = data[i];
+		rows = db.execute('SELECT * FROM tb_pumassi_events WHERE eventId=? AND hostId > 0', item.eventId);
+		while (rows.isValidRow()) {
+			item.hostId = rows.fieldByName('hostId');
+			item.hostName = rows.fieldByName('hostName');
+			rows.next();
+		}
+	}
+
+	db.close();
+	return data;
 };
 
 // 음력을 양력으로 변환한다.

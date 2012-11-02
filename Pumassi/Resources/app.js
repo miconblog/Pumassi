@@ -99,6 +99,13 @@ Ti.App.addEventListener("LOAD_MY_EVENT", function(e) {
 	});
 });
 
+Ti.App.addEventListener("LOAD_MY_EVENT_INFO", function(e){
+	var data = db.getMyEventById(e.eventId, e.eventType, e.eventName);
+	Ti.App.fireEvent("LOADED_MY_EVENT_INFO", {data:data})
+});
+
+
+
 Ti.App.addEventListener("ADD_PUMASI", function(e) {
 	db.addPumasi(e);
 	Ti.App.fireEvent("LOAD_PUMASI");
@@ -164,6 +171,10 @@ Ti.App.addEventListener("CHECK_EVENT_COMFIRM", function(e) {
 });
 Ti.App.addEventListener("UPDATE_EVENT_DATE", function(e){
 	db.updateEvent(e.eventId, "eventDate", e.value);
+});
+Ti.App.addEventListener("UPDATE_EVENT_MEMO", function(e){
+	console.log("메모 저장", e);
+	db.updateEvent(e.eventId, "memo", e.value);
 });
 Ti.App.addEventListener("UPDATE_EVENT_TIME", function(e){
 	db.updateEvent(e.eventId, "eventDate", e.value);

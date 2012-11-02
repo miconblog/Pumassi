@@ -45,12 +45,6 @@ save.addEventListener('click', function(e) {
 });
 win.rightNavButton = save;
 
-var checkComplete = function() {
-	if (dateRow.hasCheck) {
-		save.enabled = true;
-	}
-};
-
 // 입력폼
 var rows = [];
 var tableView = Titanium.UI.createTableView({
@@ -135,11 +129,14 @@ var lunnarSwitch = Ti.UI.createSwitch({
 	right : 10
 });
 var datePicker = new (require('/ui/DatePicker'))(dateRow, timeSwitch, lunnarSwitch);
-dateRow.addEventListener("click", function(e) {
-	datePicker.show();
+datePicker.on("complete", function(){
+	dateRow.hasCheck = true;
+	lunarRow.hasCheck = true;
 	lunarRow.title = "양력";
 	lunnarSwitch.value = false;
-	save.enabled = true;
+});
+dateRow.addEventListener("click", function(e) {
+	datePicker.show();
 });
 rows.push(dateRow);
 
@@ -177,6 +174,10 @@ var timeRow = Ti.UI.createTableViewRow({
 });
 
 var timePicker = new (require('/ui/TimePicker'))(lbTime);
+timePicker.on("complete", function(){
+	save.enabled = true;
+	timeRow.hasCheck = true;
+});
 timeRow.add(timeSwitch);
 timeRow.add(lbTime);
 rows.push(timeRow);

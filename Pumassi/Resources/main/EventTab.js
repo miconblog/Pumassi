@@ -7,8 +7,24 @@ var getDateString = function(dt) {
 		var Y = dt.getFullYear();
 		var M = dt.getMonth() + 1;
 		var D = dt.getDate();
+		
+		var h = dt.getHours();
+		var m = dt.getMinutes();
+		var s = (h > 12) ? " (오후 " : " 오전 ";
 
-		return Y + "년 " + M + "월 " + D + "일";
+		if (h > 12) {
+			h -= 12;
+		}
+		
+		var str = Y + "년 " + M + "월 " + D + "일" + s + h + "시";
+		
+		if (m == 0){
+			str += ")"
+		}else{
+			str += " " + m + "분)"; 
+		}
+
+		return  str; 
 	}
 };
 
@@ -28,13 +44,23 @@ add.addEventListener('click', function(e) {
 });
 win.rightNavButton = add;
 
-
-var tableView = Ti.UI.createTableView();
+var tableView = Ti.UI.createTableView({
+	editable : true
+});
 tableView.addEventListener('click', function(e) {
+	// 상세정보 열기
+	var detailWin = Ti.UI.createWindow({
+		title : e.row.data.eventName,
+		data : e.row.data,
+		url : "detail/myEvent.js"
+	});
 
+	Ti.UI.currentTab.open(detailWin);
+});
+tableView.addEventListener('delete', function(e) {
+	Ti.App.fireEvent("DELETE_EVENT", {eventId: e.row.data.eventId})
 });
 win.add(tableView);
-
 
 Ti.App.addEventListener("UPDATE_EVENT_LIST", function(e) {
 	console.log("********** 나의 이벤트 데이터 ************", e.data);
@@ -42,15 +68,17 @@ Ti.App.addEventListener("UPDATE_EVENT_LIST", function(e) {
 	var sections = [];
 	var data = e.data;
 	for (var i = 0; i < data.length; i++) {
+		var item = data[i];
 		var row = Ti.UI.createTableViewRow({
-			height : 60
+			height : 60,
+			data : item,
 		});
 
 		// 행사 이름
 		var lbName = Ti.UI.createLabel({
 			left : 10,
 			height : 30,
-			text : data[i].eventName,
+			text : item.eventName,
 			font : {
 				fontFamily : 'NaumGothic',
 				fontSize : 14,
@@ -60,30 +88,30 @@ Ti.App.addEventListener("UPDATE_EVENT_LIST", function(e) {
 		});
 		row.add(lbName);
 
+		// 행사 메모
 		var lbMemo = Ti.UI.createLabel({
 			left : 65,
 			top : 25,
 			height : 30,
-			text : data[i].memo,
+			text : item.memo.length < 1 ? "메모 없음" : item.memo,
 			font : {
 				fontFamily : 'NaumGothic',
 				fontSize : 12
-				//fontWeight: 'bold'
 			},
 			color : '#345',
 			textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT
 		});
 		row.add(lbMemo);
 
+		// 행사 날짜
 		var lbDate = Ti.UI.createLabel({
 			left : 65,
 			top : 5,
 			height : 30,
-			text : getDateString(data[i].eventDate),
+			text : getDateString(item.eventDate, item.eventTime),
 			font : {
 				fontFamily : 'NaumGothic',
 				fontSize : 12
-				//fontWeight: 'bold'
 			},
 			color : '#345',
 			textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT
@@ -91,7 +119,7 @@ Ti.App.addEventListener("UPDATE_EVENT_LIST", function(e) {
 		row.add(lbDate);
 
 		row.hasChild = true;
-		if (data[i].header) {
+		if (item.header) {
 			var header = Ti.UI.createView({
 				backgroundColor : '#789',
 				height : 'auto'
@@ -103,7 +131,7 @@ Ti.App.addEventListener("UPDATE_EVENT_LIST", function(e) {
 					fontSize : 12,
 					fontWeight : 'bold'
 				},
-				text : data[i].header,
+				text : item.header,
 				color : '#222',
 				textAlign : 'left',
 				top : 0,
@@ -126,8 +154,7 @@ Ti.App.addEventListener("UPDATE_EVENT_LIST", function(e) {
 	tableView.setData(sections);
 });
 
-
-win.addEventListener('open', function(e) {
+win.addEventListener('focus', function(e) {
 	Ti.App.fireEvent("LOAD_MY_EVENT");
 });
 
