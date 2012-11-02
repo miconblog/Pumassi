@@ -55,9 +55,5 @@ Ti.App.addEventListener("LOADED_STATICS", function(e) {
 	}
 	
 	webView.evalJS("allSpent("+ e.total +")");
-
-	// console.log("**** 이벤트별 사용금액: ****", JSON.stringify(e.data));
-	// //webView.evalJS("drawMoneyByEvent([['1', 150000], ['2', 250000], ['3', 142000], ['4', 162000], ['5', 361000]])")
-	// webView.evalJS("drawMoneyByEvent("+ JSON.stringify(e.data) +")");
 });
 
