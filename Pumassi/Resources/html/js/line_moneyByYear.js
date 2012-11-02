@@ -104,7 +104,7 @@ oBrushMapBarYear.addBrush('line', {
       
       this.ctx.moveTo(data.x, data.y);
       this.ctx.lineTo(data.xNext, data.yNext);
-      this.ctx.strokeStyle = "#08f";
+      this.ctx.strokeStyle = "#3dA";
       this.ctx.lineWidth = 2;
       this.ctx.stroke();		
 	}
