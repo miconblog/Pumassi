@@ -311,6 +311,15 @@ exports.getStatics = function(){
 		rows.next();
 	}
 	
+	// 년별 지출금액 
+	rows = db.execute("SELECT strftime( '%Y', strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , 'unixepoch') , Sum(money)  FROM tb_pumassi_events A, tb_guest_books B where A.eventId = B.eventId Group by strftime( '%Y', strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , 'unixepoch')");
+	var drawMoneyByYear = [];
+	while (rows.isValidRow()) {
+		drawMoneyByYear.push([rows.field(0), rows.field(1)]);
+		rows.next();
+	}
+	
+	
 	// 월별 지출금액
 	var drawMoneyByMonth = [];
 	rows = db.execute("SELECT strftime( '%m', strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , 'unixepoch') , Sum(money)  FROM tb_pumassi_events A, tb_guest_books B where A.eventId = B.eventId GROUP BY strftime( '%m', strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , 'unixepoch')"); 
@@ -334,12 +343,21 @@ exports.getStatics = function(){
 		drawEventCountDonut.push([rows.field(0), rows.field(1)]);
 		rows.next();
 	}
+	
+	rows = db.execute("SELECT Sum(money) FROM tb_guest_books WHERE guestId=0");
+	var total = 0;
+	if (rows.isValidRow()) {
+		total = rows.field(0);
+		
+	}
 		
 	db.close();
-	return [ 
+	return {data:[
 		['drawMoneyByEvent', drawMoneyByEvent],
+		['drawMoneyByYear', drawMoneyByYear],
 		['drawMoneyByMonth', drawMoneyByMonth],
 		['drawEventByMonth', drawEventByMonth],
 		['drawEventCountDonut', drawEventCountDonut]
-	];
+	], 
+	total: total};
 };

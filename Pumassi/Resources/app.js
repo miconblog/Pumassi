@@ -208,8 +208,6 @@ Ti.App.addEventListener("UPDATE_GUESTBOOK_MONEY", function(e){
  * 통계정보를 불러온다.
  */
 Ti.App.addEventListener("LOAD_STATICS", function(e){
-	var data = db.getStatics();
-	Ti.App.fireEvent("LOADED_STATICS", {
-		data : data
-	});
+	var info = db.getStatics();
+	Ti.App.fireEvent("LOADED_STATICS", info);
 });
