@@ -298,3 +298,48 @@ exports.deleteEvent = function(eventId) {
 	db.execute('DELETE FROM tb_guest_books WHERE eventId=?', eventId);
 	db.close();
 };
+
+
+exports.getStatics = function(){
+	var db = Ti.Database.open(DATABASE_NAME);
+	
+	// 이벤트별 지출금액
+	var rows = db.execute("SELECT eventType, Sum(money) FROM tb_pumassi_events A, tb_guest_books B WHERE A.eventId = B.eventId Group by A.eventType");
+	var drawMoneyByEvent = [];
+	while (rows.isValidRow()) {
+		drawMoneyByEvent.push([rows.field(0), rows.field(1)]);
+		rows.next();
+	}
+	
+	// 월별 지출금액
+	var drawMoneyByMonth = [];
+	rows = db.execute("SELECT strftime( '%m', strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , 'unixepoch') , Sum(money)  FROM tb_pumassi_events A, tb_guest_books B where A.eventId = B.eventId GROUP BY strftime( '%m', strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , 'unixepoch')"); 
+	while (rows.isValidRow()) {
+		drawMoneyByMonth.push([rows.field(0), rows.field(1)]);
+		rows.next();
+	}
+	
+	// 월별 이벤트
+	var drawEventByMonth = [];
+	rows = db.execute("SELECT strftime( '%m', strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , 'unixepoch') , COUNT(*)  FROM tb_pumassi_events A, tb_guest_books B where A.eventId = B.eventId Group by strftime( '%m', strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , 'unixepoch')");
+	while (rows.isValidRow()) {
+		drawEventByMonth.push([rows.field(0), rows.field(1)]);
+		rows.next();
+	}
+	
+	
+	var drawEventCountDonut = [];
+	rows = db.execute("SELECT eventType, COUNT(*) FROM tb_pumassi_events A, tb_guest_books B Where A.eventId = B.eventId Group by  A.eventType");
+	while (rows.isValidRow()) {
+		drawEventCountDonut.push([rows.field(0), rows.field(1)]);
+		rows.next();
+	}
+		
+	db.close();
+	return [ 
+		['drawMoneyByEvent', drawMoneyByEvent],
+		['drawMoneyByMonth', drawMoneyByMonth],
+		['drawEventByMonth', drawEventByMonth],
+		['drawEventCountDonut', drawEventCountDonut]
+	];
+};

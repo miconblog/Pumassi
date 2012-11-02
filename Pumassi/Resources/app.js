@@ -14,7 +14,7 @@ var win1 = Titanium.UI.createWindow({
 	url : '/main/PumassiTab.js'
 });
 var tab1 = Titanium.UI.createTab({
-	icon : 'KS_nav_views.png',
+	icon : '/images/group-icon.png',
 	title : '품앗이',
 	window : win1
 });
@@ -25,7 +25,7 @@ var win2 = Titanium.UI.createWindow({
 	url : '/main/EventTab.js'
 });
 var tab2 = Titanium.UI.createTab({
-	icon : 'KS_nav_ui.png',
+	icon : '/images/flag-green-icon.png',
 	title : '나의 이벤트',
 	window : win2
 });
@@ -36,7 +36,7 @@ var win3 = Titanium.UI.createWindow({
 	url : '/main/SettingTab.js'
 });
 var tab3 = Titanium.UI.createTab({
-	icon : 'KS_nav_ui.png',
+	icon : '/images/preferences-icon.png',
 	title : '도움말',
 	window : win3
 });
@@ -202,4 +202,14 @@ Ti.App.addEventListener("UPDATE_GUESTBOOK_MEMO", function(e){
 
 Ti.App.addEventListener("UPDATE_GUESTBOOK_MONEY", function(e){
 	db.updateGuestbook(e.eventId, "money", e.value);
+});
+
+/**
+ * 통계정보를 불러온다.
+ */
+Ti.App.addEventListener("LOAD_STATICS", function(e){
+	var data = db.getStatics();
+	Ti.App.fireEvent("LOADED_STATICS", {
+		data : data
+	});
 });

@@ -7,7 +7,7 @@ var getDateString = function(dt) {
 		var Y = dt.getFullYear();
 		var M = dt.getMonth() + 1;
 		var D = dt.getDate();
-		
+
 		var h = dt.getHours();
 		var m = dt.getMinutes();
 		var s = (h > 12) ? " (오후 " : " 오전 ";
@@ -15,22 +15,24 @@ var getDateString = function(dt) {
 		if (h > 12) {
 			h -= 12;
 		}
-		
+
 		var str = Y + "년 " + M + "월 " + D + "일" + s + h + "시";
-		
-		if (m == 0){
+
+		if (m == 0) {
 			str += ")"
-		}else{
-			str += " " + m + "분)"; 
+		} else {
+			str += " " + m + "분)";
 		}
 
-		return  str; 
+		return str;
 	}
 };
 
 var win = Ti.UI.currentWindow;
 var add = Ti.UI.createButton({
-	systemButton : Titanium.UI.iPhone.SystemButton.ADD
+	backgroundImage : "/images/red-cross-icon.png",
+	width : 32,
+	height : 32
 });
 add.addEventListener('click', function(e) {
 
@@ -58,7 +60,9 @@ tableView.addEventListener('click', function(e) {
 	Ti.UI.currentTab.open(detailWin);
 });
 tableView.addEventListener('delete', function(e) {
-	Ti.App.fireEvent("DELETE_EVENT", {eventId: e.row.data.eventId})
+	Ti.App.fireEvent("DELETE_EVENT", {
+		eventId : e.row.data.eventId
+	})
 });
 win.add(tableView);
 

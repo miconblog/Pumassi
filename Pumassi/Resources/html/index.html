@@ -72,44 +72,44 @@
 <script>
 
 //SELECT eventType, Sum(money) FROM tb_pumassi_events A, tb_guest_books B Where A.eventId = B.eventId Group by  A.eventType
-drawMoneyByEvent([
-		['1', 250000], // eventType, 금액합
-		['2', 250000],
-		['3', 1542000],
-		['4', 162000],
-		['5', 361000]
-
-]);
+// drawMoneyByEvent([
+		// ['1', 250000], // eventType, 금액합
+		// ['2', 250000],
+		// ['3', 1542000],
+		// ['4', 162000],
+		// ['5', 361000]
+// 
+// ]);
 
 //select   strftime( "%m", strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , "unixepoch") , Sum(money)  FROM tb_pumassi_events A, tb_guest_books B where A.eventId = B.eventId Group by strftime( "%m", strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , "unixepoch") 
-drawMoneyByMonth([
-		['01', 250000], // 월, 금액합
-		['02', 1000000],
-		['03', 250000],
-		['04', 361000],
-		['05', 1542000],
-		['06', 162000]
-]);
+// drawMoneyByMonth([
+		// ['01', 250000], // 월, 금액합
+		// ['02', 1000000],
+		// ['03', 250000],
+		// ['04', 361000],
+		// ['05', 1542000],
+		// ['06', 162000]
+// ]);
 
 
 //select   strftime( "%m", strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , "unixepoch") , COUNT(*)  FROM tb_pumassi_events A, tb_guest_books B where A.eventId = B.eventId Group by strftime( "%m", strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , "unixepoch")
-drawEventByMonth([
-		['01', 1], // 월별 이벤트
-		['02', 1],
-		['03', 1],
-		['04', 1],
-		['05', 2],
-		['06', 3]
-]);
+// drawEventByMonth([
+		// ['01', 1], // 월별 이벤트
+		// ['02', 1],
+		// ['03', 1],
+		// ['04', 1],
+		// ['05', 2],
+		// ['06', 3]
+// ]);
 
 //SELECT eventType, COUNT(*) FROM tb_pumassi_events A, tb_guest_books B Where A.eventId = B.eventId Group by  A.eventType
-drawEventCountDonut([
-		['1', 6], // eventType, 합
-		['2', 2],
-		['3', 1],
-		['4', 1],
-		['5', 1]
-]);
+// drawEventCountDonut([
+		// ['1', 6], // eventType, 합
+		// ['2', 2],
+		// ['3', 1],
+		// ['4', 1],
+		// ['5', 1]
+// ]);
 </script>
 <div style="text-align:center;line-height:0.00em">
 	<div class="footer">

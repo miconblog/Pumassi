@@ -14,7 +14,9 @@ var getDateString = function(dt) {
 
 var win = Ti.UI.currentWindow;
 var add = Ti.UI.createButton({
-	systemButton : Titanium.UI.iPhone.SystemButton.ADD
+	backgroundImage : "/images/red-cross-icon.png",
+	width : 32,
+	height : 32
 });
 add.addEventListener('click', function(e) {
 
@@ -27,6 +29,26 @@ add.addEventListener('click', function(e) {
 	childWin.open();
 });
 win.rightNavButton = add;
+
+var statics = Ti.UI.createButton({
+	backgroundImage : "/images/stats-2-icon.png",
+	width : 32,
+	height : 32
+});
+statics.addEventListener('click', function(e) {
+	var staticsWin = Ti.UI.createWindow({
+		title : '통계정보',
+		backgroundColor : '#FFF',
+		url : '/main/StaticsWindow.js',
+		layout : 'vertical'
+	});
+
+	//Ti.UI.currentTab.open(staticsWin, {transition:Ti.UI.iPhone.AnimationStyle.FLIP_FROM_LEFT});
+	staticsWin.open({
+		transition : Ti.UI.iPhone.AnimationStyle.FLIP_FROM_LEFT
+	});
+});
+win.leftNavButton = statics;
 
 var tableView = Ti.UI.createTableView({
 	editable : true
@@ -41,8 +63,10 @@ tableView.addEventListener('click', function(e) {
 
 	Ti.UI.currentTab.open(detailWin);
 });
-tableView.addEventListener("delete", function(e){
-	Ti.App.fireEvent("DELETE_EVENT", { eventId: e.rowData.data.eventId })
+tableView.addEventListener("delete", function(e) {
+	Ti.App.fireEvent("DELETE_EVENT", {
+		eventId : e.rowData.data.eventId
+	})
 });
 
 win.add(tableView);
