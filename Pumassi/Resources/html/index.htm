@@ -45,6 +45,14 @@
 </ul>
 <br/>
 
+<div id="drawMoneyByYear"></div>
+<ul class="lst_ct shape3 _list" id="list">
+	<li class="thmb " style="text-align:center;height:30px;">
+		<span style="padding-top:20px;" ><h3>년도별 지출</h3></span>
+	</li>
+</ul>
+<br/>
+
 <div id="drawEventByMonth"></div>
 <ul class="lst_ct shape3 _list" id="list">
 	<li class="thmb " style="text-align:center;height:30px;">
@@ -65,6 +73,7 @@
 
 <script type="text/javascript" src = "js/nchart-1.0.1.min.js"></script>
 <script type="text/javascript" src = "js/line_moneyByMonth.js"></script>
+<script type="text/javascript" src = "js/line_moneyByYear.js"></script>
 <script type="text/javascript" src = "js/line_eventByMonth.js"></script>
 <script type="text/javascript" src = "js/pie_eventCount.js"></script>
 <script type="text/javascript" src = "js/bar_moneyByEvent.js"></script>
@@ -73,7 +82,7 @@
 
 //SELECT eventType, Sum(money) FROM tb_pumassi_events A, tb_guest_books B Where A.eventId = B.eventId Group by  A.eventType
 drawMoneyByEvent([
-		['1', 250000], // eventType, 금액합
+		['1', 115555500], // eventType, 금액합
 		['2', 250000],
 		['3', 1542000],
 		['4', 162000],
@@ -91,6 +100,12 @@ drawMoneyByMonth([
 		['06', 162000]
 ]);
 
+//select   strftime( "%Y", strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , "unixepoch") , Sum(money)  FROM tb_pumassi_events A, tb_guest_books B where A.eventId = B.eventId Group by strftime( "%Y", strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , "unixepoch") 
+drawMoneyByYear([
+		['2010', 250000], // 월, 금액합
+		['2011', 1000000],
+		['2012', 250000]
+]);
 
 //select   strftime( "%m", strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , "unixepoch") , COUNT(*)  FROM tb_pumassi_events A, tb_guest_books B where A.eventId = B.eventId Group by strftime( "%m", strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , "unixepoch")
 drawEventByMonth([
