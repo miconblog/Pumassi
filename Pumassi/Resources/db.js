@@ -209,18 +209,24 @@ exports.getMyEventById = function(eventId, eventType, eventName) {
 	}
 
 	// 해당 이벤트의 주체자를 모두 가져온다.
+	var ret = [];
 	for (var i = 0; i < data.length; ++i) {
 		var item = data[i];
 		rows = db.execute('SELECT * FROM tb_pumassi_events WHERE eventId=? AND hostId > 0', item.eventId);
 		while (rows.isValidRow()) {
-			item.hostId = rows.fieldByName('hostId');
-			item.hostName = rows.fieldByName('hostName');
+
+			var type = rows.fieldByName('eventType');
+			if (type == eventType) {
+				item.hostId = rows.fieldByName('hostId');
+				item.hostName = rows.fieldByName('hostName');
+				ret.push(item);
+			}
 			rows.next();
 		}
 	}
 
 	db.close();
-	return data;
+	return ret;
 };
 
 // 음력을 양력으로 변환한다.
@@ -247,10 +253,16 @@ exports.getSolarDate = function(sDate) {
 
 };
 
-exports.getGuestBookInfoById = function(eventId) {
-	console.log("************ 방명록 정보를 가져온다. *************")
+exports.getGuestBookInfoById = function(eventId, guestId) {
+	console.log("************ 방명록 정보를 가져온다. *************", eventId, guestId);
 	var db = Ti.Database.open(DATABASE_NAME);
-	var rows = db.execute('SELECT * FROM tb_guest_books WHERE eventId=? AND guestId=0', eventId);
+	
+	var sql = 'SELECT * FROM tb_guest_books WHERE eventId=? AND guestId=0';
+	if(guestId != 0){
+		sql = 'SELECT * FROM tb_guest_books WHERE eventId=? AND guestId>0'
+	}
+	
+	var rows = db.execute(sql, eventId);
 	var data = [];
 	while (rows.isValidRow()) {
 		data.push({
@@ -265,6 +277,10 @@ exports.getGuestBookInfoById = function(eventId) {
 		rows.next();
 	}
 	db.close();
+	
+	if(guestId != 0){
+		return data;
+	}
 	return data[0];
 };
 
@@ -281,12 +297,38 @@ exports.updateEvent = function(eventId, field, value) {
 /**
  * 방명록 수정
  */
-exports.updateGuestbook = function(eventId, field, value) {
+exports.updateMyGuestbook = function(eventId, field, value) {
 	var db = Ti.Database.open(DATABASE_NAME);
 	db.execute('UPDATE tb_guest_books SET ' + field + '=? WHERE eventId=?', value, eventId);
 	db.execute('UPDATE tb_pumassi_events SET lastModified=? WHERE eventId=?', new Date().getTime(), eventId);
 	db.close();
 };
+
+exports.updateGuestbook = function(guestbookId, field, value) {
+	var db = Ti.Database.open(DATABASE_NAME);
+	db.execute('UPDATE tb_guest_books SET ' + field + '=? WHERE guestbookId=?', value, guestbookId);
+	db.close();
+};
+
+
+exports.addGuestBook = function(eventId, guestId, guestName) {
+	var db = Ti.Database.open(DATABASE_NAME);
+
+	var lastModified = new Date().getTime();
+	var guestbookId = "g" + lastModified;
+
+	var row = db.execute('SELECT * FROM tb_guest_books WHERE eventId=? AND guestId=?', eventId, guestId);
+	if (row.getRowCount() > 0) {
+		return alert("이미 추가한 사람입니다.");
+	}
+
+	// 방명록에 추가한다.
+	console.log("******* 방명록에 추가할 사람: *******", eventId, guestId, guestName);
+	db.execute('INSERT INTO tb_guest_books(guestbookId, eventId, guestId, guestName, money, isAttend, memo) ' 
+	+ 'VALUES (?,?,?,?,?,?,?)', guestbookId, eventId, guestId, guestName, 0, 1, "");
+	db.close();
+};
+
 
 /**
  * 품앗이 이벤트를 삭제한다.
@@ -299,10 +341,9 @@ exports.deleteEvent = function(eventId) {
 	db.close();
 };
 
-
-exports.getStatics = function(){
+exports.getStatics = function() {
 	var db = Ti.Database.open(DATABASE_NAME);
-	
+
 	// 이벤트별 지출금액
 	var rows = db.execute("SELECT eventType, Sum(money) FROM tb_pumassi_events A, tb_guest_books B WHERE A.eventId = B.eventId Group by A.eventType");
 	var drawMoneyByEvent = [];
@@ -310,24 +351,23 @@ exports.getStatics = function(){
 		drawMoneyByEvent.push([rows.field(0), rows.field(1)]);
 		rows.next();
 	}
-	
-	// 년별 지출금액 
+
+	// 년별 지출금액
 	rows = db.execute("SELECT strftime( '%Y', strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , 'unixepoch') , Sum(money)  FROM tb_pumassi_events A, tb_guest_books B where A.eventId = B.eventId Group by strftime( '%Y', strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , 'unixepoch')");
 	var drawMoneyByYear = [];
 	while (rows.isValidRow()) {
 		drawMoneyByYear.push([rows.field(0), rows.field(1)]);
 		rows.next();
 	}
-	
-	
+
 	// 월별 지출금액
 	var drawMoneyByMonth = [];
-	rows = db.execute("SELECT strftime( '%m', strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , 'unixepoch') , Sum(money)  FROM tb_pumassi_events A, tb_guest_books B where A.eventId = B.eventId GROUP BY strftime( '%m', strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , 'unixepoch')"); 
+	rows = db.execute("SELECT strftime( '%m', strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , 'unixepoch') , Sum(money)  FROM tb_pumassi_events A, tb_guest_books B where A.eventId = B.eventId GROUP BY strftime( '%m', strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , 'unixepoch')");
 	while (rows.isValidRow()) {
 		drawMoneyByMonth.push([rows.field(0), rows.field(1)]);
 		rows.next();
 	}
-	
+
 	// 월별 이벤트
 	var drawEventByMonth = [];
 	rows = db.execute("SELECT strftime( '%m', strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , 'unixepoch') , COUNT(*)  FROM tb_pumassi_events A, tb_guest_books B where A.eventId = B.eventId Group by strftime( '%m', strftime('%s','1970-01-01 00:00:00') + eventDate/1000 , 'unixepoch')");
@@ -335,29 +375,24 @@ exports.getStatics = function(){
 		drawEventByMonth.push([rows.field(0), rows.field(1)]);
 		rows.next();
 	}
-	
-	
+
 	var drawEventCountDonut = [];
 	rows = db.execute("SELECT eventType, COUNT(*) FROM tb_pumassi_events A, tb_guest_books B Where A.eventId = B.eventId Group by  A.eventType");
 	while (rows.isValidRow()) {
 		drawEventCountDonut.push([rows.field(0), rows.field(1)]);
 		rows.next();
 	}
-	
+
 	rows = db.execute("SELECT Sum(money) FROM tb_guest_books WHERE guestId=0");
 	var total = 0;
 	if (rows.isValidRow()) {
 		total = rows.field(0);
-		
+
 	}
-		
+
 	db.close();
-	return {data:[
-		['drawMoneyByEvent', drawMoneyByEvent],
-		['drawMoneyByYear', drawMoneyByYear],
-		['drawMoneyByMonth', drawMoneyByMonth],
-		['drawEventByMonth', drawEventByMonth],
-		['drawEventCountDonut', drawEventCountDonut]
-	], 
-	total: total};
+	return {
+		data : [['drawMoneyByEvent', drawMoneyByEvent], ['drawMoneyByYear', drawMoneyByYear], ['drawMoneyByMonth', drawMoneyByMonth], ['drawEventByMonth', drawEventByMonth], ['drawEventCountDonut', drawEventCountDonut]],
+		total : total
+	};
 };

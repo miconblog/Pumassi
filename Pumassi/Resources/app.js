@@ -157,11 +157,19 @@ Ti.App.addEventListener("LOAD_PUMASI", function(e) {
  * 방명록 정보를 가져온다.
  */
 Ti.App.addEventListener("LOAD_GUEST_BOOK", function(e) {
-	var data = db.getGuestBookInfoById(e.eventId);
+	var data = db.getGuestBookInfoById(e.eventId, e.guestId);
 	Ti.App.fireEvent("LOADED_GUEST_BOOK", {
 		data : data
 	});
 });
+Ti.App.addEventListener("LOAD_MY_EVENT_GUEST_BOOK", function(e) {
+	var data = db.getGuestBookInfoById(e.eventId, 100);
+	Ti.App.fireEvent("LOADED_MY_EVENT_GUEST_BOOK", {
+		data : data
+	});
+});
+
+
 
 /**
  * 정산확인 완료
@@ -193,15 +201,22 @@ Ti.App.addEventListener("DELETE_EVENT", function(e){
  * 이벤트 참석 유무 결정
  */
 Ti.App.addEventListener("UPDATE_GUESTBOOK_ATTEND", function(e){
-	db.updateGuestbook(e.eventId, "isAttend", e.value);
+	db.updateMyGuestbook(e.eventId, "isAttend", e.value);
 });
 
 Ti.App.addEventListener("UPDATE_GUESTBOOK_MEMO", function(e){
-	db.updateGuestbook(e.eventId, "memo", e.value);
+	db.updateMyGuestbook(e.eventId, "memo", e.value);
 });
 
 Ti.App.addEventListener("UPDATE_GUESTBOOK_MONEY", function(e){
-	db.updateGuestbook(e.eventId, "money", e.value);
+	db.updateMyGuestbook(e.eventId, "money", e.value);
+});
+Ti.App.addEventListener("ADD_PERSON_TO_MY_GUEST_BOOK", function(e){
+	db.addGuestBook(e.eventId, e.guestId, e.guestName)
+});
+
+Ti.App.addEventListener("UPDATE_MY_EVENT_GUESTBOOK", function(e){
+	db.updateGuestbook(e.guestbookId, e.field, e.value);
 });
 
 /**

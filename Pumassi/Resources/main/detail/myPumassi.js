@@ -38,7 +38,6 @@ var tableView = Titanium.UI.createTableView({
 win.add(tableView);
 
 Ti.App.addEventListener("LOADED_GUEST_BOOK", function(e) {
-	console.log(e);
 	var rows = [];
 
 	/**
@@ -258,7 +257,9 @@ Ti.App.addEventListener("LOADED_GUEST_BOOK", function(e) {
 });
 
 win.addEventListener("open", function() {
+	// 내가 품앗이한 방명록 정보
 	Ti.App.fireEvent("LOAD_GUEST_BOOK", {
-		eventId : win.data.eventId
+		eventId : win.data.eventId,
+		guestId : 0
 	});
 });

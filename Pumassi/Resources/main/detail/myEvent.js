@@ -29,9 +29,11 @@ var getDateString = function(dt) {
 };
 
 var win = Ti.UI.currentWindow;
+var now = new Date().getTime();
 var tableView = Titanium.UI.createTableView({
 	style : Titanium.UI.iPhone.TableViewStyle.GROUPED,
-	backgroundColor : "#CCC"
+	backgroundColor : "#CCC",
+	maxRowHeight : 200
 });
 win.add(tableView);
 
@@ -87,9 +89,80 @@ Ti.App.addEventListener("LOADED_MY_EVENT_INFO", function(e) {
 	 */
 	console.log("***** 초대해야할 사람들 *****", e);
 	var personRow = Ti.UI.createTableViewRow({
-		header : "초대할 사람들"
+		selectionStyle : Ti.UI.iPhone.TableViewCellSelectionStyle.NONE,
+		header : "내가 품앗이한 사람들 (" + e.data.length + "명)",
+		height : Ti.UI.SIZE
 	});
+
+	// 품앗이 목록
+	var pView = Ti.UI.createTableView({
+		borderRadius : 10,
+		height : Ti.UI.SIZE,
+		allowsSelection: false
+	});
+
+	var personRows = [];
+	if( e.data.length == 0){
+		personRows.push({title: "아무도 없어~ 내곁엔 너마저~"});
+	}
+	for (var i = 0; i < e.data.length; ++i) {
+		var person = e.data[i];
+
+		var row = Ti.UI.createTableViewRow({
+			title : person.hostName + " (" + person.money / 10000 + "만원)"
+		});
+		
+		console.log("사람 정보: ", person);
+
+		if (now >= win.data.eventDate) {// 지난 일정이라면 정산이 필요하다.
+			var button = Ti.UI.createButton({
+				title : "방명록에 추가",
+				top : 5,
+				bottom : 5,
+				right : 10,
+				height : 30,
+				personId : person.hostId,
+				personName : person.hostName
+			});
+
+			button.addEventListener("click", function(e) {
+				
+				console.log("버튼 이벤트: ", e.source);
+				
+				Ti.App.fireEvent("ADD_PERSON_TO_MY_GUEST_BOOK", {
+					eventId : win.data.eventId,
+					guestId : e.source.personId,
+					guestName : e.source.personName
+				})
+			});
+			row.add(button);
+		}
+		personRows.push(row);
+	}
+	pView.setData(personRows);
+	personRow.add(pView);
 	rows.push(personRow);
+
+	/**
+	 * 방명록 정산
+	 */
+	if (now >= win.data.eventDate) {// 과거라면.. 정산이 필요하다.
+		var guestRow = Ti.UI.createTableViewRow({
+			header : "",
+			title : "방명록",
+			hasChild : true
+		});
+	
+		guestRow.addEventListener("click", function(e){
+			var geustbook = Ti.UI.createWindow({
+				title : win.data.eventName + " 방명록",
+				data : win.data,
+				url : "/main/detail/myGuestBook.js"
+			});
+			Ti.UI.currentTab.open(geustbook);
+		});
+		rows.push(guestRow);
+	}
 
 	tableView.setData(rows);
 });
@@ -97,7 +170,7 @@ Ti.App.addEventListener("LOADED_MY_EVENT_INFO", function(e) {
 win.addEventListener("open", function() {
 	Ti.App.fireEvent("LOAD_MY_EVENT_INFO", {
 		eventId : win.data.eventId,
-		eventType: win.data.eventType,
-		eventName: win.data.eventName
+		eventType : win.data.eventType,
+		eventName : win.data.eventName
 	});
 });
