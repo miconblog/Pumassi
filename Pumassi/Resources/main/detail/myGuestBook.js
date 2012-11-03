@@ -22,9 +22,11 @@ Ti.App.addEventListener("LOADED_MY_EVENT_GUEST_BOOK", function(e) {
 	for (var i = 0; i < data.length; ++i) {
 
 		var item = data[i];
-		var row = Ti.UI.createTableViewRow({
-			header : "이름                    금액             참석유무"
-		});
+		var row = Ti.UI.createTableViewRow();
+		
+		if( i==0 ){
+			row.header = "이름                    금액             참석유무";
+		}
 
 		// 이름
 		var lbName = Ti.UI.createLabel({
